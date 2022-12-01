@@ -8,7 +8,7 @@
         <version>3.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>dev.hmmr</groupId>
+    <groupId>dev.mqqx</groupId>
     <artifactId>advent-of-code</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>advent-of-code</name>

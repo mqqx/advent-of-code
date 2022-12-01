@@ -1,4 +1,4 @@
-package dev.hmmr.aoc;
+package dev.mqqx.aoc;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

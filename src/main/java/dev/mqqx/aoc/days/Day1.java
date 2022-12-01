@@ -1,4 +1,4 @@
-package dev.hmmr.aoc.days;
+package dev.mqqx.aoc.days;
 
 import static java.util.Arrays.stream;
 import static java.util.Comparator.reverseOrder;
