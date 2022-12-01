@@ -8,7 +8,6 @@ import org.springframework.core.io.Resource;
 
 class Day1Test {
 
-
   @Test
   void testMostCaloriesExample() {
     final Resource example = new ClassPathResource("1-example");

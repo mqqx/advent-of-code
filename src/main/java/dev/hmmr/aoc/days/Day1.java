@@ -1,6 +1,7 @@
 package dev.hmmr.aoc.days;
 
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,12 +12,16 @@ import org.springframework.core.io.Resource;
 public class Day1 {
   @SneakyThrows
   static int calculateMostCalories(Resource example) {
-    final List<String> content = Arrays.stream(new String(example.getInputStream().readAllBytes()).split("\n\n")).toList();
+    final List<String> content =
+        stream(new String(example.getInputStream().readAllBytes()).split("\n\n")).toList();
 
     int mostCalories = 0;
 
     for (String numbers : content) {
-      final Integer calories = Arrays.stream(numbers.split("\n")).toList().stream().map(Integer::valueOf).reduce(0, Integer::sum);
+      final Integer calories =
+          stream(numbers.split("\n")).toList().stream()
+              .map(Integer::valueOf)
+              .reduce(0, Integer::sum);
       if (calories > mostCalories) {
         mostCalories = calories;
       }
