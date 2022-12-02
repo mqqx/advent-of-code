@@ -7,8 +7,10 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day2 {
   private static final String ROCK_ROCK = "A X";
@@ -61,6 +63,7 @@ public class Day2 {
         case SCISSORS_ROCK -> points += 1 + 6;
         case SCISSORS_PAPER -> points += 2;
         case SCISSORS_SCISSORS -> points += 3 + 3;
+        default -> log.warn("Wrong game input: {}", game);
       }
     }
     return points;
