@@ -29,6 +29,27 @@ public class Day3 {
     return sumOfPriorities;
   }
 
+  @SneakyThrows
+  public static int sumBadgePriorities(Resource rucksacksWithItems) {
+    int sumOfPriorities = 0;
+    List<String> splitIntoRucksacks = splitIntoRucksacks(rucksacksWithItems);
+    for (int j = 0; j < splitIntoRucksacks.size(); j += 3) {
+      String rucksackA = splitIntoRucksacks.get(j);
+      String rucksackB = splitIntoRucksacks.get(j + 1);
+      String rucksackC = splitIntoRucksacks.get(j + 2);
+      for (int i = 0; i < rucksackA.length(); i++) {
+        final char possibleBadge = rucksackA.charAt(i);
+        if (rucksackB.contains(Character.toString(possibleBadge))
+            && rucksackC.contains(Character.toString(possibleBadge))) {
+          sumOfPriorities += getPriorityOfItem(possibleBadge);
+          break;
+        }
+      }
+    }
+
+    return sumOfPriorities;
+  }
+
   private static int getPriorityOfItem(char a) {
     int magicNumber;
     if (Character.isLowerCase(a)) {
