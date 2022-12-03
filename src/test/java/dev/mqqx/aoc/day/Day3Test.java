@@ -1,7 +1,6 @@
-package dev.mqqx.aoc.days;
+package dev.mqqx.aoc.day;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -24,14 +23,14 @@ class Day3Test {
   }
 
   @Test
-  void testCalculateScoreExample() {
+  void testSumBadgePrioritiesExample() {
     final Resource rucksacksWithItems = new ClassPathResource("day3/3-example");
 
     assertThat(Day3.sumBadgePriorities(rucksacksWithItems)).isEqualTo(70);
   }
 
   @Test
-  void testCalculateScore() {
+  void testSumBadgePriorities() {
     final Resource rucksacksWithItems = new ClassPathResource("day3/3");
 
     assertThat(Day3.sumBadgePriorities(rucksacksWithItems)).isEqualTo(2_488);

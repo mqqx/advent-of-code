@@ -1,4 +1,4 @@
-package dev.mqqx.aoc.days;
+package dev.mqqx.aoc.day;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
