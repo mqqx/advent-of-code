@@ -1,12 +1,10 @@
 package dev.mqqx.aoc.day;
 
-import static java.util.Arrays.stream;
+import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
 
-import java.io.IOException;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
@@ -23,17 +21,15 @@ public class Day2 {
   private static final String SCISSORS_SCISSORS = "C Z";
   private static final String PAPER_SCISSORS = "B Z";
 
-  @SneakyThrows
   static int calculateScore(Resource strategyGuide) {
-    List<String> games = splitIntoGroupsOfGames(strategyGuide);
+    List<String> games = splitStringResourceByLineFeed(strategyGuide);
 
     return calculatePoints(games);
   }
 
-  @SneakyThrows
   static int calculateScoreWithChangedOutcome(Resource strategyGuide) {
     List<String> games =
-        splitIntoGroupsOfGames(strategyGuide).stream()
+        splitStringResourceByLineFeed(strategyGuide).stream()
             .map(
                 game ->
                     switch (game) {
@@ -67,9 +63,5 @@ public class Day2 {
       }
     }
     return points;
-  }
-
-  private static List<String> splitIntoGroupsOfGames(Resource strategyGuide) throws IOException {
-    return stream(new String(strategyGuide.getInputStream().readAllBytes()).split("\n")).toList();
   }
 }

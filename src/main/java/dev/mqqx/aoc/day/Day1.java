@@ -1,15 +1,14 @@
 package dev.mqqx.aoc.day;
 
+import static dev.mqqx.aoc.util.ElfUtils.splitStringResource;
 import static java.util.Arrays.stream;
 import static java.util.Comparator.reverseOrder;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.core.io.Resource;
 
 @NoArgsConstructor(access = AccessLevel.NONE)
@@ -17,9 +16,8 @@ public class Day1 {
 
   public static final int NUMBER_OF_ELVES_CARRYING_THE_MOST_CALORIES = 3;
 
-  @SneakyThrows
-  static int calculateMostCalories(Resource example) {
-    final List<String> groupsOfCalories = splitIntoGroupsOfCalories(example);
+  static int calculateMostCalories(Resource elfCalories) {
+    final List<String> groupsOfCalories = splitStringResource(elfCalories, "\n\n");
 
     int mostCalories = 0;
 
@@ -34,9 +32,8 @@ public class Day1 {
     return mostCalories;
   }
 
-  @SneakyThrows
-  static int calculateTotalOfTop3MostCalories(Resource example) {
-    final List<String> groupOfCalories = splitIntoGroupsOfCalories(example);
+  static int calculateTotalOfTop3MostCalories(Resource elfCalories) {
+    final List<String> groupOfCalories = splitStringResource(elfCalories, "\n\n");
 
     final ArrayList<Integer> calorieList =
         groupOfCalories.stream()
@@ -47,10 +44,6 @@ public class Day1 {
         .sorted(reverseOrder())
         .limit(NUMBER_OF_ELVES_CARRYING_THE_MOST_CALORIES)
         .reduce(0, Integer::sum);
-  }
-
-  private static List<String> splitIntoGroupsOfCalories(Resource example) throws IOException {
-    return stream(new String(example.getInputStream().readAllBytes()).split("\n\n")).toList();
   }
 
   private static Integer getCalorieCount(String calories) {

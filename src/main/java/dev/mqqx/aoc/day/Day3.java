@@ -1,26 +1,33 @@
 package dev.mqqx.aoc.day;
 
-import static java.util.Arrays.stream;
+import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
 
-import java.io.IOException;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.core.io.Resource;
 
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day3 {
-  @SneakyThrows
-  static int sumItemPriorities(Resource rucksacksWithItems) {
 
+  private static final int LOWER_CASE_OFFSET_FOR_PRIORITY_CALCULATION = -9;
+  private static final int UPPER_CASE_OFFSET_FOR_PRIORITY_CALCULATION = 17;
+  private static final int RUCKSACKS_PER_GROUP = 3;
+
+  static int sumItemPriorities(Resource rucksacksWithItems) {
     int sumOfPriorities = 0;
-    for (String rucksack : splitIntoRucksacks(rucksacksWithItems)) {
-      final int mid = rucksack.length() / 2;
-      final String[] compartments = {rucksack.substring(0, mid), rucksack.substring(mid)};
-      for (int i = 0; i < compartments[0].length(); i++) {
-        final char itemInTwoCompartments = compartments[0].charAt(i);
-        if (compartments[1].contains(Character.toString(itemInTwoCompartments))) {
+
+    for (String rucksack : splitStringResourceByLineFeed(rucksacksWithItems)) {
+      final String[] compartments = getCompartments(rucksack);
+      final String firstCompartment = compartments[0];
+
+      for (int i = 0; i < firstCompartment.length(); i++) {
+        final char itemInTwoCompartments = firstCompartment.charAt(i);
+        final String secondCompartment = compartments[1];
+        final boolean hasItemInBothCompartments =
+            secondCompartment.contains(Character.toString(itemInTwoCompartments));
+
+        if (hasItemInBothCompartments) {
           sumOfPriorities += getPriorityOfItem(itemInTwoCompartments);
           break;
         }
@@ -29,19 +36,23 @@ public class Day3 {
     return sumOfPriorities;
   }
 
-  @SneakyThrows
   public static int sumBadgePriorities(Resource rucksacksWithItems) {
     int sumOfPriorities = 0;
-    List<String> splitIntoRucksacks = splitIntoRucksacks(rucksacksWithItems);
-    for (int j = 0; j < splitIntoRucksacks.size(); j += 3) {
-      String rucksackA = splitIntoRucksacks.get(j);
-      String rucksackB = splitIntoRucksacks.get(j + 1);
-      String rucksackC = splitIntoRucksacks.get(j + 2);
-      for (int i = 0; i < rucksackA.length(); i++) {
-        final char possibleBadge = rucksackA.charAt(i);
-        if (rucksackB.contains(Character.toString(possibleBadge))
-            && rucksackC.contains(Character.toString(possibleBadge))) {
-          sumOfPriorities += getPriorityOfItem(possibleBadge);
+    final List<String> rucksacks = splitStringResourceByLineFeed(rucksacksWithItems);
+
+    for (int j = 0; j < rucksacks.size(); j += RUCKSACKS_PER_GROUP) {
+      String firstRucksack = rucksacks.get(j);
+      String secondRucksack = rucksacks.get(j + 1);
+      String thirdRucksack = rucksacks.get(j + 2);
+
+      for (int i = 0; i < firstRucksack.length(); i++) {
+        final char possibleBadgeInAllRucksacks = firstRucksack.charAt(i);
+        final String possibleBadge = Character.toString(possibleBadgeInAllRucksacks);
+        final boolean hasBadgeInAllRucksacks =
+            secondRucksack.contains(possibleBadge) && thirdRucksack.contains(possibleBadge);
+
+        if (hasBadgeInAllRucksacks) {
+          sumOfPriorities += getPriorityOfItem(possibleBadgeInAllRucksacks);
           break;
         }
       }
@@ -50,19 +61,14 @@ public class Day3 {
     return sumOfPriorities;
   }
 
-  private static int getPriorityOfItem(char a) {
-    int magicNumber;
-    if (Character.isLowerCase(a)) {
-      magicNumber = -9;
-    } else {
-      magicNumber = 17;
-    }
-
-    return Character.getNumericValue(a) + magicNumber;
+  private static String[] getCompartments(String rucksack) {
+    final int mid = rucksack.length() / 2;
+    return new String[] {rucksack.substring(0, mid), rucksack.substring(mid)};
   }
 
-  private static List<String> splitIntoRucksacks(Resource rucksacksWithItems) throws IOException {
-    return stream(new String(rucksacksWithItems.getInputStream().readAllBytes()).split("\n"))
-        .toList();
+  private static int getPriorityOfItem(char item) {
+    return Character.isLowerCase(item)
+        ? Character.getNumericValue(item) + LOWER_CASE_OFFSET_FOR_PRIORITY_CALCULATION
+        : Character.getNumericValue(item) + UPPER_CASE_OFFSET_FOR_PRIORITY_CALCULATION;
   }
 }
