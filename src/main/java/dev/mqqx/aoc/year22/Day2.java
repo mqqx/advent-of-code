@@ -1,6 +1,6 @@
 package dev.mqqx.aoc.year22;
 
-import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
+import static dev.mqqx.aoc.util.SplitUtils.lines;
 
 import java.util.List;
 import lombok.AccessLevel;
@@ -22,14 +22,14 @@ public class Day2 {
   private static final String PAPER_SCISSORS = "B Z";
 
   static int calculateScore(Resource strategyGuide) {
-    List<String> games = splitStringResourceByLineFeed(strategyGuide);
+    List<String> games = lines(strategyGuide).toList();
 
     return calculatePoints(games);
   }
 
   static int calculateScoreWithChangedOutcome(Resource strategyGuide) {
     List<String> games =
-        splitStringResourceByLineFeed(strategyGuide).stream()
+        lines(strategyGuide)
             .map(
                 game ->
                     switch (game) {

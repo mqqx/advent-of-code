@@ -1,6 +1,6 @@
 package dev.mqqx.aoc.year22;
 
-import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
+import static dev.mqqx.aoc.util.SplitUtils.linesList;
 
 import java.util.List;
 import lombok.AccessLevel;
@@ -17,7 +17,7 @@ public class Day3 {
   static int sumItemPriorities(Resource rucksacksWithItems) {
     int sumOfPriorities = 0;
 
-    for (String rucksack : splitStringResourceByLineFeed(rucksacksWithItems)) {
+    for (String rucksack : linesList(rucksacksWithItems)) {
       final String[] compartments = getCompartments(rucksack);
       final String firstCompartment = compartments[0];
 
@@ -38,7 +38,7 @@ public class Day3 {
 
   public static int sumBadgePriorities(Resource rucksacksWithItems) {
     int sumOfPriorities = 0;
-    final List<String> rucksacks = splitStringResourceByLineFeed(rucksacksWithItems);
+    final List<String> rucksacks = linesList(rucksacksWithItems);
 
     for (int j = 0; j < rucksacks.size(); j += RUCKSACKS_PER_GROUP) {
       String firstRucksack = rucksacks.get(j);

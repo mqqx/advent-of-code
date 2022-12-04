@@ -1,6 +1,6 @@
 package dev.mqqx.aoc.year22;
 
-import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
+import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static java.lang.Integer.parseInt;
 import static java.util.stream.IntStream.rangeClosed;
 
@@ -23,7 +23,7 @@ public class Day4 {
 
   private static int getOverlappingCounter(Resource pairsOfElves, boolean isFullyOverlapping) {
     return (int)
-        splitStringResourceByLineFeed(pairsOfElves).stream()
+        lines(pairsOfElves)
             .map(pair -> pair.split(","))
             .map(splitPair -> checkOverlapping(splitPair, isFullyOverlapping))
             .filter(Boolean.TRUE::equals)
