@@ -9,30 +9,30 @@ import org.springframework.core.io.Resource;
 class Day4Test {
 
   @Test
-  void doThingExample() {
+  void testGetFullyOverlappingPairsExample() {
     final Resource example = new ClassPathResource("day4/4-example");
 
-    assertThat(Day4.getOverlappingPairs(example)).isEqualTo(2);
+    assertThat(Day4.getFullyOverlappingPairs(example)).isEqualTo(2);
   }
 
   @Test
-  void doThing() {
+  void testGetFullyOverlappingPairs() {
     final Resource resource = new ClassPathResource("day4/4");
 
-    assertThat(Day4.getOverlappingPairs(resource)).isEqualTo(490);
+    assertThat(Day4.getFullyOverlappingPairs(resource)).isEqualTo(490);
   }
 
   @Test
-  void doThingAdvancedExample() {
+  void testGetOverlappingPairsExample() {
     final Resource example = new ClassPathResource("day4/4-example");
 
-    assertThat(Day4.doThingAdvanced(example)).isEqualTo(4);
+    assertThat(Day4.getOverlappingPairs(example)).isEqualTo(4);
   }
 
   @Test
-  void doThingAdvanced() {
+  void testGetOverlappingPairs() {
     final Resource resource = new ClassPathResource("day4/4");
 
-    assertThat(Day4.doThingAdvanced(resource)).isEqualTo(157);
+    assertThat(Day4.getOverlappingPairs(resource)).isEqualTo(921);
   }
 }

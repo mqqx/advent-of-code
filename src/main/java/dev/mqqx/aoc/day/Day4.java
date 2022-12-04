@@ -1,9 +1,11 @@
 package dev.mqqx.aoc.day;
 
 import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
+import static java.lang.Integer.parseInt;
+import static java.util.stream.IntStream.rangeClosed;
 
-import java.time.temporal.ValueRange;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -11,63 +13,37 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day4 {
 
+  static int getFullyOverlappingPairs(Resource pairsOfElves) {
+    return getOverlappingCounter(pairsOfElves, true);
+  }
+
   static int getOverlappingPairs(Resource pairsOfElves) {
-    final List<String> elfPairs = splitStringResourceByLineFeed(pairsOfElves);
+    return getOverlappingCounter(pairsOfElves, false);
+  }
 
-    int overlappingCounter = 0;
-    for (String pair : elfPairs) {
-      final String[] splitPair = pair.split(",");
+  private static int getOverlappingCounter(Resource pairsOfElves, boolean isFullyOverlapping) {
+    return (int)
+        splitStringResourceByLineFeed(pairsOfElves).stream()
+            .map(pair -> pair.split(","))
+            .map(splitPair -> checkOverlapping(splitPair, isFullyOverlapping))
+            .filter(Boolean.TRUE::equals)
+            .count();
+  }
 
-      final String[] firstElfSections = splitPair[0].split("-");
-      final String[] secondElfSections = splitPair[1].split("-");
+  private static boolean checkOverlapping(String[] splitPair, boolean isFullyOverlapping) {
+    final Set<Integer> firstRange = getRange(splitPair[0]);
+    final Set<Integer> secondRange = getRange(splitPair[1]);
 
-      if (checkOverlapping(firstElfSections, secondElfSections)) {
-        overlappingCounter++;
-      } else if (checkOverlapping(secondElfSections, firstElfSections)) {
-        overlappingCounter++;
-      }
+    if (isFullyOverlapping) {
+      return firstRange.containsAll(secondRange) || secondRange.containsAll(firstRange);
     }
-
-    return overlappingCounter;
+    return firstRange.stream().anyMatch(secondRange::contains);
   }
 
-  private static boolean checkOverlapping(String[] firstElfSections, String[] secondElfSections) {
-    final ValueRange of =
-        ValueRange.of(Long.parseLong(firstElfSections[0]), Long.parseLong(firstElfSections[1]));
-
-    final boolean includesLower = of.isValidIntValue(Integer.parseInt(secondElfSections[0]));
-    final boolean includesHigher = of.isValidIntValue(Integer.parseInt(secondElfSections[1]));
-
-    return includesLower && includesHigher;
-  }
-
-  static int doThingAdvanced(Resource input) {
-    final List<String> elfPairs = splitStringResourceByLineFeed(input);
-
-    int overlappingCounter = 0;
-    for (String pair : elfPairs) {
-      final String[] splitPair = pair.split(",");
-
-      final String[] firstElfSections = splitPair[0].split("-");
-      final String[] secondElfSections = splitPair[1].split("-");
-
-      if (checkOverlapping2(firstElfSections, secondElfSections)) {
-        overlappingCounter++;
-      } else if (checkOverlapping2(secondElfSections, firstElfSections)) {
-        overlappingCounter++;
-      }
-    }
-
-    return overlappingCounter;
-  }
-
-  private static boolean checkOverlapping2(String[] firstElfSections, String[] secondElfSections) {
-    final ValueRange of =
-        ValueRange.of(Long.parseLong(firstElfSections[0]), Long.parseLong(firstElfSections[1]));
-
-    final boolean includesLower = of.isValidIntValue(Integer.parseInt(secondElfSections[0]));
-    final boolean includesHigher = of.isValidIntValue(Integer.parseInt(secondElfSections[1]));
-
-    return includesLower || includesHigher;
+  private static Set<Integer> getRange(String sections) {
+    final String[] splitSections = sections.split("-");
+    return rangeClosed(parseInt(splitSections[0]), parseInt(splitSections[1]))
+        .boxed()
+        .collect(Collectors.toSet());
   }
 }
