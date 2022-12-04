@@ -1,4 +1,4 @@
-package dev.mqqx.aoc.day;
+package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.ElfUtils.splitStringResourceByLineFeed;
 
