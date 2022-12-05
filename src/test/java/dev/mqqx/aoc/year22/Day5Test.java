@@ -19,7 +19,7 @@ class Day5Test {
   void doThing() {
     final Resource resource = new ClassPathResource("year22/day5/5");
 
-    assertThat(Day5.doThingREal(resource)).isEqualTo("MQSHJMWNH");
+    assertThat(Day5.doThing(resource)).isEqualTo("MQSHJMWNH");
   }
 
   @Test
