@@ -1,6 +1,8 @@
 package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.SplitUtils.lines;
+import static java.lang.Character.getNumericValue;
+import static java.lang.Character.isLowerCase;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,11 +42,11 @@ public class Day3 {
         .collect(Collectors.groupingBy(s -> counter.getAndIncrement() / RUCKSACKS_PER_GROUP))
         .values()
         .stream()
-        .map(Day3::getBadgePriorityInEachGroup)
+        .map(Day3::findBadgePriority)
         .reduce(0, Integer::sum);
   }
 
-  private static Integer getBadgePriorityInEachGroup(List<String> groupOfRucksacks) {
+  private static Integer findBadgePriority(List<String> groupOfRucksacks) {
     String firstRucksack = groupOfRucksacks.get(0);
     String secondRucksack = groupOfRucksacks.get(1);
     String thirdRucksack = groupOfRucksacks.get(2);
@@ -66,8 +68,8 @@ public class Day3 {
   }
 
   private static int getPriorityOfItem(char item) {
-    return Character.isLowerCase(item)
-        ? Character.getNumericValue(item) + LOWER_CASE_OFFSET_FOR_PRIORITY_CALCULATION
-        : Character.getNumericValue(item) + UPPER_CASE_OFFSET_FOR_PRIORITY_CALCULATION;
+    return isLowerCase(item)
+        ? getNumericValue(item) + LOWER_CASE_OFFSET_FOR_PRIORITY_CALCULATION
+        : getNumericValue(item) + UPPER_CASE_OFFSET_FOR_PRIORITY_CALCULATION;
   }
 }

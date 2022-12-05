@@ -12,27 +12,27 @@ class Day5Test {
   void doThingExample() {
     final Resource example = new ClassPathResource("year22/day5/5-example");
 
-    assertThat(Day5.doThing(example)).isEqualTo("CMZ");
+    assertThat(Day5.getTopContainersSingle(example)).isEqualTo("CMZ");
   }
 
   @Test
   void doThing() {
     final Resource resource = new ClassPathResource("year22/day5/5");
 
-    assertThat(Day5.doThing(resource)).isEqualTo("MQSHJMWNH");
+    assertThat(Day5.getTopContainersSingle(resource)).isEqualTo("MQSHJMWNH");
   }
 
   @Test
   void doThingAdvancedExample() {
     final Resource example = new ClassPathResource("year22/day5/5-example");
 
-    assertThat(Day5.doThingAdvanced(example)).isEqualTo("MCD");
+    assertThat(Day5.getTopContainersMulti(example)).isEqualTo("MCD");
   }
 
   @Test
   void doThingAdvanced() {
     final Resource resource = new ClassPathResource("year22/day5/5");
 
-    assertThat(Day5.doThingAdvanced(resource)).isEqualTo("LLWJRBHVZ");
+    assertThat(Day5.getTopContainersMulti(resource)).isEqualTo("LLWJRBHVZ");
   }
 }
