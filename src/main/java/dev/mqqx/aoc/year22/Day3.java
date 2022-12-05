@@ -1,8 +1,10 @@
 package dev.mqqx.aoc.year22;
 
-import static dev.mqqx.aoc.util.SplitUtils.linesList;
+import static dev.mqqx.aoc.util.SplitUtils.lines;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -15,50 +17,47 @@ public class Day3 {
   private static final int RUCKSACKS_PER_GROUP = 3;
 
   static int sumItemPriorities(Resource rucksacksWithItems) {
-    int sumOfPriorities = 0;
+    return lines(rucksacksWithItems)
+        .map(Day3::getCompartments)
+        .map(Day3::findPriority)
+        .reduce(0, Integer::sum);
+  }
 
-    for (String rucksack : linesList(rucksacksWithItems)) {
-      final String[] compartments = getCompartments(rucksack);
-      final String firstCompartment = compartments[0];
-
-      for (int i = 0; i < firstCompartment.length(); i++) {
-        final char itemInTwoCompartments = firstCompartment.charAt(i);
-        final String secondCompartment = compartments[1];
-        final boolean hasItemInBothCompartments =
-            secondCompartment.contains(Character.toString(itemInTwoCompartments));
-
-        if (hasItemInBothCompartments) {
-          sumOfPriorities += getPriorityOfItem(itemInTwoCompartments);
-          break;
-        }
-      }
-    }
-    return sumOfPriorities;
+  private static int findPriority(String[] compartments) {
+    return compartments[0]
+        .chars()
+        .filter(item -> compartments[1].contains(Character.toString(item)))
+        .mapToObj(item -> Character.toChars(item)[0])
+        .map(Day3::getPriorityOfItem)
+        .findFirst()
+        .orElse(0);
   }
 
   public static int sumBadgePriorities(Resource rucksacksWithItems) {
-    int sumOfPriorities = 0;
-    final List<String> rucksacks = linesList(rucksacksWithItems);
+    final AtomicInteger counter = new AtomicInteger(0);
 
-    for (int j = 0; j < rucksacks.size(); j += RUCKSACKS_PER_GROUP) {
-      String firstRucksack = rucksacks.get(j);
-      String secondRucksack = rucksacks.get(j + 1);
-      String thirdRucksack = rucksacks.get(j + 2);
+    return lines(rucksacksWithItems)
+        .collect(Collectors.groupingBy(s -> counter.getAndIncrement() / RUCKSACKS_PER_GROUP))
+        .values()
+        .stream()
+        .map(Day3::getBadgePriorityInEachGroup)
+        .reduce(0, Integer::sum);
+  }
 
-      for (int i = 0; i < firstRucksack.length(); i++) {
-        final char possibleBadgeInAllRucksacks = firstRucksack.charAt(i);
-        final String possibleBadge = Character.toString(possibleBadgeInAllRucksacks);
-        final boolean hasBadgeInAllRucksacks =
-            secondRucksack.contains(possibleBadge) && thirdRucksack.contains(possibleBadge);
+  private static Integer getBadgePriorityInEachGroup(List<String> groupOfRucksacks) {
+    String firstRucksack = groupOfRucksacks.get(0);
+    String secondRucksack = groupOfRucksacks.get(1);
+    String thirdRucksack = groupOfRucksacks.get(2);
 
-        if (hasBadgeInAllRucksacks) {
-          sumOfPriorities += getPriorityOfItem(possibleBadgeInAllRucksacks);
-          break;
-        }
-      }
-    }
-
-    return sumOfPriorities;
+    return firstRucksack
+        .chars()
+        .mapToObj(Character::toString)
+        .filter(secondRucksack::contains)
+        .filter(thirdRucksack::contains)
+        .map(item -> item.charAt(0))
+        .map(Day3::getPriorityOfItem)
+        .findFirst()
+        .orElse(0);
   }
 
   private static String[] getCompartments(String rucksack) {
