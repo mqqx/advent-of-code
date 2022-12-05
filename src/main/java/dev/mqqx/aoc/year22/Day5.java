@@ -14,6 +14,10 @@ public class Day5 {
   private static int commandStartIndex = 0;
 
   static String doThing(Resource input) {
+    return getFinalTopContainers(input, true);
+  }
+
+  private static String getFinalTopContainers(Resource input, boolean isSingleContainerOnly) {
     final List<String> strings = SplitUtils.linesList(input);
     final ArrayList<Stack<String>> stacks = getStacks(strings);
 
@@ -25,8 +29,18 @@ public class Day5 {
 
       final int amountToPull = Integer.parseInt(command[1]);
 
-      for (int j = 0; j < amountToPull; j++) {
-        stackToPush.push(stackToPull.pop());
+      if (isSingleContainerOnly) {
+        for (int j = 0; j < amountToPull; j++) {
+          stackToPush.push(stackToPull.pop());
+        }
+      } else {
+        final Stack<String> helperStack = new Stack<>();
+        for (int j = 0; j < amountToPull; j++) {
+          helperStack.push(stackToPull.pop());
+        }
+        for (int j = 0; j < amountToPull; j++) {
+          stackToPush.push(helperStack.pop());
+        }
       }
     }
 
@@ -65,26 +79,6 @@ public class Day5 {
   }
 
   static String doThingAdvanced(Resource input) {
-    final List<String> strings = SplitUtils.linesList(input);
-    final ArrayList<Stack<String>> stacks = getStacks(strings);
-
-    for (int i = commandStartIndex; i < strings.size(); i++) {
-      final String[] command = strings.get(i).split(" ");
-
-      final Stack<String> stackToPull = stacks.get(Integer.parseInt(command[3]) - 1);
-      final Stack<String> stackToPush = stacks.get(Integer.parseInt(command[5]) - 1);
-
-      final int amountToPull = Integer.parseInt(command[1]);
-
-      final Stack<String> helperStack = new Stack<>();
-      for (int j = 0; j < amountToPull; j++) {
-        helperStack.push(stackToPull.pop());
-      }
-      for (int j = 0; j < amountToPull; j++) {
-        stackToPush.push(helperStack.pop());
-      }
-    }
-
-    return stacks.stream().map(Stack::pop).collect(Collectors.joining());
+    return getFinalTopContainers(input, false);
   }
 }
