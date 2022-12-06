@@ -12,27 +12,27 @@ class Day6Test {
   void doThingExample() {
     final Resource example = new ClassPathResource("year22/day6/6-example");
 
-    assertThat(Day6.doThing(example)).isEqualTo(11);
+    assertThat(Day6.doThing(example, 4)).isEqualTo(11);
   }
 
   @Test
   void doThing() {
     final Resource resource = new ClassPathResource("year22/day6/6");
 
-    assertThat(Day6.doThing(resource)).isEqualTo(1_275);
+    assertThat(Day6.doThing(resource, 4)).isEqualTo(1_275);
   }
 
   @Test
   void doThingAdvancedExample() {
     final Resource example = new ClassPathResource("year22/day6/6-example");
 
-    assertThat(Day6.doThingAdvanced(example)).isEqualTo(26);
+    assertThat(Day6.doThing(example, 14)).isEqualTo(26);
   }
 
   @Test
   void doThingAdvanced() {
     final Resource resource = new ClassPathResource("year22/day6/6");
 
-    assertThat(Day6.doThingAdvanced(resource)).isEqualTo(3_605);
+    assertThat(Day6.doThing(resource, 14)).isEqualTo(3_605);
   }
 }

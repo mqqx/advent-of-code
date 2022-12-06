@@ -12,6 +12,11 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class SplitUtils {
   @SneakyThrows
+  public static String read(Resource stringResource) {
+    return new String(stringResource.getInputStream().readAllBytes());
+  }
+
+  @SneakyThrows
   public static Stream<String> lines(Resource stringResource, String regex) {
     return stream(new String(stringResource.getInputStream().readAllBytes()).split(regex));
   }
