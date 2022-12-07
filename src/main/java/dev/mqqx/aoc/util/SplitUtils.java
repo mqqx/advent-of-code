@@ -55,4 +55,9 @@ public class SplitUtils {
   public static List<String> linesList(Resource stringResource) {
     return new String(stringResource.getInputStream().readAllBytes()).lines().toList();
   }
+
+  @SneakyThrows
+  public static List<String> linesList(Resource stringResource, String regex) {
+    return stream(new String(stringResource.getInputStream().readAllBytes()).split(regex)).toList();
+  }
 }
