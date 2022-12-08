@@ -12,7 +12,7 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day3 {
 
-  static int doThing(Resource input) {
+  static int solvePart1(Resource input) {
     final List<String> strings = SplitUtils.lines(input).toList();
     final int[] bitCounters = countBits(strings);
     final String gammaRate = calculateGammaRate(strings, bitCounters);
@@ -21,7 +21,7 @@ public class Day3 {
     return bitStringToInt(gammaRate) * bitStringToInt(epsilonRate);
   }
 
-  static int doThingAdvanced(Resource input) {
+  static int solvePart2(Resource input) {
     int oxygenGeneratorRating = calculateRating(new ArrayList<>(SplitUtils.linesList(input)), true);
     int co2ScrubberRating = calculateRating(new ArrayList<>(SplitUtils.linesList(input)), false);
 

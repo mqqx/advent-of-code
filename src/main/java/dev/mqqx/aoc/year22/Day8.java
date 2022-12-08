@@ -13,7 +13,7 @@ public class Day8 {
 
   record VisibilityScore(boolean isVisible, int score) {}
 
-  static int doThing(Resource input) {
+  static int solvePart1(Resource input) {
     final Integer[][] forest = readForest(linesList(input));
     final int additionalVisibleTrees = calculateAdditionalVisibleTrees(forest);
     final int sumOfAllOuterTrees = 4 * forest.length - 4;
@@ -21,7 +21,7 @@ public class Day8 {
     return sumOfAllOuterTrees + additionalVisibleTrees;
   }
 
-  static int doThingAdvanced(Resource input) {
+  static int solvePart2(Resource input) {
     final Integer[][] forest = readForest(linesList(input));
 
     return calculateScenicScore(forest);

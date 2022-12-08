@@ -9,30 +9,30 @@ import org.springframework.core.io.Resource;
 class Day6Test {
 
   @Test
-  void doThingExample() {
+  void testSolvePart1Example() {
     final Resource example = new ClassPathResource("year22/day6/6-example");
 
-    assertThat(Day6.doThing(example, 4)).isEqualTo(11);
+    assertThat(Day6.solvePart1(example, 4)).isEqualTo(11);
   }
 
   @Test
-  void doThing() {
+  void testSolvePart1() {
     final Resource resource = new ClassPathResource("year22/day6/6");
 
-    assertThat(Day6.doThing(resource, 4)).isEqualTo(1_275);
+    assertThat(Day6.solvePart1(resource, 4)).isEqualTo(1_275);
   }
 
   @Test
-  void doThingAdvancedExample() {
+  void testSolvePart2Example() {
     final Resource example = new ClassPathResource("year22/day6/6-example");
 
-    assertThat(Day6.doThing(example, 14)).isEqualTo(26);
+    assertThat(Day6.solvePart1(example, 14)).isEqualTo(26);
   }
 
   @Test
-  void doThingAdvanced() {
+  void testSolvePart2() {
     final Resource resource = new ClassPathResource("year22/day6/6");
 
-    assertThat(Day6.doThing(resource, 14)).isEqualTo(3_605);
+    assertThat(Day6.solvePart1(resource, 14)).isEqualTo(3_605);
   }
 }

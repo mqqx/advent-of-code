@@ -13,7 +13,7 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day2 {
 
-  static int doThing(Resource input) {
+  static int solvePart1(Resource input) {
     final int horizontalPosition =
         lines(input)
             .filter(command -> command.startsWith("f"))
@@ -32,7 +32,7 @@ public class Day2 {
     return horizontalPosition * depth;
   }
 
-  static int doThingAdvanced(Resource input) {
+  static int solvePart2(Resource input) {
     final List<String> strings = linesList(input);
 
     int aim = 0;

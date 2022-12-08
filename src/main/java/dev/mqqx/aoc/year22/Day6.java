@@ -10,7 +10,7 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day6 {
 
-  static int doThing(Resource input, int distinctChars) {
+  static int solvePart1(Resource input, int distinctChars) {
     final String inputString = read(input);
     return IntStream.range(distinctChars - 1, inputString.length())
             .filter(

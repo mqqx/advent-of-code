@@ -13,7 +13,7 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day4 {
 
-  static int doThing(Resource input) {
+  static int solvePart1(Resource input) {
     final List<String> bingoLines = linesList(input, "\n\n");
 
     return calculateScoreOfFirstWinningBoard(
@@ -117,7 +117,7 @@ public class Day4 {
     return false;
   }
 
-  static int doThingAdvanced(Resource input) {
+  static int solvePart2(Resource input) {
     final List<String> bingoLines = linesList(input, "\n\n");
 
     return calculateScoreOfLastWinningBoard(

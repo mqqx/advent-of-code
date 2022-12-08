@@ -16,7 +16,7 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day7 {
 
-  static int doThing(Resource input) {
+  static int solvePart1(Resource input) {
     final List<String> commands = linesList(input);
 
     return readFileSystem(commands).values().stream()
@@ -37,7 +37,7 @@ public class Day7 {
     }
   }
 
-  static int doThingAdvanced(Resource input) {
+  static int solvePart2(Resource input) {
     final Map<String, Directory> fileSystem = readFileSystem(linesList(input));
 
     final int diskSpace = 70_000_000;
