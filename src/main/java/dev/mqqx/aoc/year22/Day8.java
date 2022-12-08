@@ -1,8 +1,8 @@
 package dev.mqqx.aoc.year22;
 
+import static dev.mqqx.aoc.util.SplitUtils.linesList;
 import static java.lang.Integer.parseInt;
 
-import dev.mqqx.aoc.util.SplitUtils;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -12,10 +12,9 @@ import org.springframework.core.io.Resource;
 public class Day8 {
 
   static int doThing(Resource input) {
-    final Integer[][] forest = readForest(SplitUtils.linesList(input));
-    int additionalVisibleTrees = calculateAdditionalVisibleTrees(forest);
-
-    final int sumOfAllOuterTrees = (forest.length - 1) * 4;
+    final Integer[][] forest = readForest(linesList(input));
+    final int additionalVisibleTrees = calculateAdditionalVisibleTrees(forest);
+    final int sumOfAllOuterTrees = (forest.length - 1) * 2 + (forest[0].length - 1) * 2;
 
     return sumOfAllOuterTrees + additionalVisibleTrees;
   }
@@ -37,12 +36,7 @@ public class Day8 {
 
     for (int i = 1; i < forest.length - 1; i++) {
       for (int j = 1; j < forest[0].length - 1; j++) {
-
-        // if is visible increase addition
-        final Integer currentTree = forest[i][j];
-
-        // search in every direction
-        boolean isVisible = checkVisibility(forest, i, j, currentTree);
+        boolean isVisible = checkVisibility(forest, i, j);
 
         if (isVisible) {
           additionalVisibleTrees++;
@@ -52,39 +46,16 @@ public class Day8 {
     return additionalVisibleTrees;
   }
 
-  private static boolean checkVisibility(Integer[][] forest, int i, int j, Integer currentTree) {
-    boolean isVisibleLeft = true;
-    boolean isVisibleRight = true;
-    boolean isVisibleTop = true;
+  private static boolean checkVisibility(Integer[][] forest, int i, int j) {
+    return isVisibleLeft(forest[i], j)
+        || isVisibleRight(forest[i], j)
+        || isVisibleTop(forest, i, j)
+        || isVisibleBottom(forest, i, j);
+  }
+
+  private static boolean isVisibleBottom(Integer[][] forest, int i, int j) {
+    final Integer currentTree = forest[i][j];
     boolean isVisibleBottom = true;
-
-    // search left
-    for (int k = 0; k < j; k++) {
-      final Integer treeToCompare = forest[i][k];
-      if (treeToCompare >= currentTree) {
-        isVisibleLeft = false;
-        break;
-      }
-    }
-
-    // search right
-    for (int k = j + 1; k < forest[0].length; k++) {
-      final Integer treeToCompare = forest[i][k];
-      if (treeToCompare >= currentTree) {
-        isVisibleRight = false;
-        break;
-      }
-    }
-
-    // search up
-    for (int k = 0; k < i; k++) {
-      final Integer treeToCompare = forest[k][j];
-      if (treeToCompare >= currentTree) {
-        isVisibleTop = false;
-        break;
-      }
-    }
-    // search down
     for (int k = i + 1; k < forest.length; k++) {
       final Integer treeToCompare = forest[k][j];
       if (treeToCompare >= currentTree) {
@@ -92,11 +63,50 @@ public class Day8 {
         break;
       }
     }
-    return isVisibleLeft || isVisibleRight || isVisibleTop || isVisibleBottom;
+    return isVisibleBottom;
+  }
+
+  private static boolean isVisibleTop(Integer[][] forest, int i, int j) {
+    final Integer currentTree = forest[i][j];
+    boolean isVisibleTop = true;
+    for (int k = i - 1; k > -1; k--) {
+      final Integer treeToCompare = forest[k][j];
+      if (treeToCompare >= currentTree) {
+        isVisibleTop = false;
+        break;
+      }
+    }
+    return isVisibleTop;
+  }
+
+  private static boolean isVisibleRight(Integer[] forest, int j) {
+    final Integer currentTree = forest[j];
+    boolean isVisibleRight = true;
+    for (int k = j + 1; k < forest.length; k++) {
+      final Integer treeToCompare = forest[k];
+      if (treeToCompare >= currentTree) {
+        isVisibleRight = false;
+        break;
+      }
+    }
+    return isVisibleRight;
+  }
+
+  private static boolean isVisibleLeft(Integer[] forest, int j) {
+    final Integer currentTree = forest[j];
+    boolean isVisibleLeft = true;
+    for (int k = j - 1; k > -1; k--) {
+      final Integer treeToCompare = forest[k];
+      if (treeToCompare >= currentTree) {
+        isVisibleLeft = false;
+        break;
+      }
+    }
+    return isVisibleLeft;
   }
 
   static int doThingAdvanced(Resource input) {
-    final Integer[][] forest = readForest(SplitUtils.linesList(input));
+    final Integer[][] forest = readForest(linesList(input));
 
     return calculateScenicScore(forest);
   }
