@@ -20,47 +20,81 @@ public class Day9 {
   static class Knot {
     int x;
     int y;
+    String id;
 
     Knot head;
     Knot tail;
 
     public void moveRight() {
-      if (Math.abs(head.x - x) > 1) {
-        x = head.x - 1;
-        y = head.y;
-      }
-      if (tail != null) {
-        tail.moveRight();
+      if (tail == null && "H".equals(head.id)) {
+        if (Math.abs(head.x - x) > 1) {
+          x = (x + head.x) / 2;
+          y = head.y;
+        }
+      } else {
+        updateIndex();
+
+        if (tail != null) {
+          tail.moveRight();
+        }
       }
     }
 
     public void moveUp() {
-      if (Math.abs(head.y - y) > 1) {
-        x = head.x;
-        y = head.y - 1;
-      }
-      if (tail != null) {
-        tail.moveUp();
+      if (tail == null && "H".equals(head.id)) {
+        if (Math.abs(head.y - y) > 1) {
+          x = head.x;
+          y = (y + head.y) / 2;
+        }
+      } else {
+        updateIndex();
+
+        if (tail != null) {
+          tail.moveUp();
+        }
       }
     }
 
     public void moveLeft() {
-      if (Math.abs(head.x - x) > 1) {
-        x = head.x + 1;
-        y = head.y;
-      }
-      if (tail != null) {
-        tail.moveLeft();
+      if (tail == null && "H".equals(head.id)) {
+        if (Math.abs(head.x - x) > 1) {
+          x = (x + head.x) / 2;
+          y = head.y;
+        }
+      } else {
+        updateIndex();
+
+        if (tail != null) {
+          tail.moveLeft();
+        }
       }
     }
 
     public void moveDown() {
-      if (Math.abs(head.y - y) > 1) {
-        x = head.x;
-        y = head.y + 1;
+      if (tail == null && "H".equals(head.id)) {
+        if (Math.abs(head.y - y) > 1) {
+          x = head.x;
+          y = (y + head.y) / 2;
+        }
+      } else {
+        updateIndex();
+
+        if (tail != null) {
+          tail.moveDown();
+        }
       }
-      if (tail != null) {
-        tail.moveDown();
+    }
+
+    private void updateIndex() {
+      if (Math.abs(head.y - y) > 1 && Math.abs(head.x - x) > 1) {
+        x = (x + head.x) / 2;
+        y = (y + head.y) / 2;
+      } else if (Math.abs(head.x - x) > 1) {
+        x = (x + head.x) / 2;
+        y = head.y;
+      } else if (Math.abs(head.y - y) > 1) {
+        x = head.x;
+        y = (y + head.y) / 2;
       }
     }
   }
@@ -84,6 +118,8 @@ public class Day9 {
   private static String[][] walkBridge(List<String> moves, int knotsInBetween) {
     //    final int x = 6;
     //    final int y = 5;
+    //    final int x = 27;
+    //    final int y = 21;
     final int x = 1000;
     final int y = 1000;
 
@@ -91,15 +127,17 @@ public class Day9 {
 
     //    final int xStart = 0;
     //    final int yStart = 0;
+    //    final int xStart = 11;
+    //    final int yStart = 5;
     final int xStart = 500;
     final int yStart = 500;
-    final Knot head = new Knot(xStart, yStart, null, null);
-    final Knot tail = new Knot(xStart, yStart, null, null);
+    final Knot head = new Knot(xStart, yStart, "H", null, null);
+    final Knot tail = new Knot(xStart, yStart, "9", null, null);
 
     if (knotsInBetween > 0) {
       Knot lastKnot = null;
       for (int i = 0; i < knotsInBetween; i++) {
-        final Knot knot = new Knot(xStart, yStart, lastKnot, null);
+        final Knot knot = new Knot(xStart, yStart, String.valueOf(i + 1), lastKnot, null);
 
         if (i == 0) {
           head.setTail(knot);
@@ -119,8 +157,6 @@ public class Day9 {
       head.setTail(tail);
       tail.setHead(head);
     }
-
-    field[head.x][head.y] = "#";
 
     for (String move : moves) {
       final String[] splitMove = move.split(" ");
@@ -173,12 +209,8 @@ public class Day9 {
         String element = xRow[j];
         if ("#".equals(element)) {
           counter++;
-          System.out.print("#");
-        } else {
-          System.out.print(".");
         }
       }
-      System.out.println();
     }
     return counter;
   }
