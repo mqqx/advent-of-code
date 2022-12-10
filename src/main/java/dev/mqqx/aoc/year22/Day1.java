@@ -26,6 +26,6 @@ public class Day1 {
   }
 
   private static Integer getCalorieCount(String calories) {
-    return stream(calories.split("\n")).map(Integer::valueOf).reduce(0, Integer::sum);
+    return stream(calories.split("\n")).mapToInt(Integer::valueOf).sum();
   }
 }
