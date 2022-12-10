@@ -1,10 +1,14 @@
 package dev.mqqx.aoc.year22;
 
-import static dev.mqqx.aoc.util.SplitUtils.lines;
+import static dev.mqqx.aoc.util.SplitUtils.linesList;
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.joining;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -13,63 +17,41 @@ import org.springframework.core.io.Resource;
 public class Day10 {
 
   static int solvePart1(Resource input) {
-    final AtomicInteger cycle = new AtomicInteger();
-    final AtomicInteger strength = new AtomicInteger(1);
-
-    return lines(input)
-        .map(
-            instruction -> {
-              final String[] splitI = instruction.split(" ");
-              final String command = splitI[0];
-              if ("noop".equals(command)) {
-                return getSignalStrength(cycle, strength);
-              } else {
-                final int sum =
-                    getSignalStrength(cycle, strength) + getSignalStrength(cycle, strength);
-                strength.addAndGet(parseInt(splitI[1]));
-                return sum;
-              }
-            })
-        .mapToInt(e -> e)
-        .sum();
+    return cycleCommands(Day10::getSignalStrength, linesList(input)).mapToInt(e -> e).sum();
   }
 
   static String solvePart2(Resource input) {
-    final AtomicInteger cycle = new AtomicInteger(0);
-    final AtomicInteger strength = new AtomicInteger(1);
-
-    return lines(input)
-        .map(
-            instruction -> {
-              final String[] splitI = instruction.split(" ");
-              final String command = splitI[0];
-              String pixel = getPixel(cycle, strength);
-
-              if ("addx".equals(command)) {
-                cycle.getAndIncrement();
-                pixel += getPixel(cycle, strength);
-                strength.addAndGet(parseInt(splitI[1]));
-              }
-              cycle.getAndIncrement();
-              return pixel;
-            })
-        .collect(joining());
+    return cycleCommands(Day10::getPixel, linesList(input)).collect(joining());
   }
 
-  private static int getSignalStrength(AtomicInteger cycle, AtomicInteger strength) {
-    cycle.getAndIncrement();
-    return (cycle.get() + 20) % 40 == 0 ? cycle.get() * strength.get() : 0;
-  }
+  private static <T> Stream<T> cycleCommands(
+      BiFunction<Integer, Integer, T> operation, List<String> lines) {
+    int strength = 1;
+    int cycle = 1;
+    final Collection<T> result = new ArrayList<>();
 
-  private static String getPixel(AtomicInteger cycle, AtomicInteger strength) {
-    int cyclePart = cycle.get() % 40;
-    String pixels = "";
+    for (String instruction : lines) {
+      result.add(operation.apply(cycle, strength));
 
-    if (cycle.get() != 0 && cyclePart == 0) {
-      pixels += "\n";
+      if (instruction.startsWith("addx")) {
+        cycle++;
+        result.add(operation.apply(cycle, strength));
+        strength += parseInt(instruction.substring(5));
+      }
+      cycle++;
     }
+    return result.stream();
+  }
 
-    if (cyclePart >= strength.get() - 1 && cyclePart <= strength.get() + 1) {
+  private static int getSignalStrength(int cycle, int strength) {
+    return (cycle + 20) % 40 == 0 ? cycle * strength : 0;
+  }
+
+  private static String getPixel(int cycle, int strength) {
+    int cyclePart = (cycle - 1) % 40;
+    String pixels = cyclePart == 0 ? "\n" : "";
+
+    if (cyclePart >= strength - 1 && cyclePart <= strength + 1) {
       pixels += "#";
     } else {
       pixels += ".";
