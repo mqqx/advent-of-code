@@ -122,25 +122,34 @@ public class Day9 {
     final HashSet<Point> visitedPositions = new HashSet<>();
     visitedPositions.add(tail.pos);
 
-    for (String move : linesList(input)) {
-      final String[] splitMove = move.split(" ");
-      final String directionToMove = splitMove[0];
-      int stepsToMove = parseInt(splitMove[1]);
-
-      switch (directionToMove) {
-        case "R" -> move(head.getTail()::moveRight, tail, visitedPositions, stepsToMove);
-        case "U" -> move(head.getTail()::moveUp, tail, visitedPositions, stepsToMove);
-        case "L" -> move(head.getTail()::moveLeft, tail, visitedPositions, stepsToMove);
-        case "D" -> move(head.getTail()::moveDown, tail, visitedPositions, stepsToMove);
-        default -> log.warn("Could not recognize direction: {}", directionToMove);
-      }
+    for (String moveString : linesList(input)) {
+      final String[] splitMove = moveString.split(" ");
+      final Runnable moveDirection = getMoveDirection(head, splitMove[0]);
+      move(moveDirection, tail, visitedPositions, parseInt(splitMove[1]));
     }
 
     return visitedPositions.size();
   }
 
+  private static Runnable getMoveDirection(Knot head, String directionToMove) {
+    Runnable moveDirection = null;
+
+    switch (directionToMove) {
+      case "R" -> moveDirection = head.getTail()::moveRight;
+      case "U" -> moveDirection = head.getTail()::moveUp;
+      case "L" -> moveDirection = head.getTail()::moveLeft;
+      case "D" -> moveDirection = head.getTail()::moveDown;
+      default -> log.warn("Could not recognize direction: {}", directionToMove);
+    }
+    return moveDirection;
+  }
+
   private static void move(
       Runnable moveDirection, Knot tail, HashSet<Point> visitedPositions, int stepsToMove) {
+    if (moveDirection == null) {
+      return;
+    }
+
     while (stepsToMove > 0) {
       stepsToMove--;
       moveDirection.run();
