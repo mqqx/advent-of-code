@@ -30,31 +30,29 @@ public class Day9 {
     Knot tail;
 
     public void moveRight() {
-      if (head.getHead() == null) {
-        head.pos.x++;
-      }
+      moveHead(() -> head.pos.x++);
       moveWithXFocus(tail != null ? tail::moveRight : null);
     }
 
     public void moveUp() {
-      if (head.getHead() == null) {
-        head.pos.y++;
-      }
+      moveHead(() -> head.pos.y++);
       moveWithYFocus(tail != null ? tail::moveUp : null);
     }
 
     public void moveLeft() {
-      if (head.getHead() == null) {
-        head.pos.x--;
-      }
+      moveHead(() -> head.pos.x--);
       moveWithXFocus(tail != null ? tail::moveLeft : null);
     }
 
     public void moveDown() {
-      if (head.getHead() == null) {
-        head.pos.y--;
-      }
+      moveHead(() -> head.pos.y--);
       moveWithYFocus(tail != null ? tail::moveDown : null);
+    }
+
+    private void moveHead(Runnable moveHead) {
+      if (head.getHead() == null) {
+        moveHead.run();
+      }
     }
 
     private void moveWithXFocus(Runnable move) {
@@ -74,11 +72,11 @@ public class Day9 {
     }
 
     private void updateIndexWithXGapAndY() {
-      pos = new Point((pos.x + head.pos.x) / 2, head.pos.y);
+      pos.setLocation((pos.x + head.pos.x) / 2, head.pos.y);
     }
 
     private void updateIndexWithYGapAndX() {
-      pos = new Point(head.pos.x, (pos.y + head.pos.y) / 2);
+      pos.setLocation(head.pos.x, (pos.y + head.pos.y) / 2);
     }
 
     private boolean isHeadTailWithoutKnotsInBetween() {
