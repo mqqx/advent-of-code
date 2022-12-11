@@ -1,9 +1,10 @@
 package dev.mqqx.aoc.year22;
 
+import static dev.mqqx.aoc.util.SplitUtils.linesList;
 import static java.lang.Integer.parseInt;
 
-import dev.mqqx.aoc.util.SplitUtils;
-import java.util.List;
+import java.awt.Point;
+import java.util.HashSet;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,26 +23,37 @@ public class Day9 {
   @AllArgsConstructor
   @FieldDefaults(level = AccessLevel.PRIVATE)
   static class Knot {
-    int x;
-    int y;
+    Point pos;
     String id;
 
     Knot head;
     Knot tail;
 
     public void moveRight() {
+      if (head.getHead() == null) {
+        head.pos.x++;
+      }
       moveWithXFocus(tail != null ? tail::moveRight : null);
     }
 
     public void moveUp() {
+      if (head.getHead() == null) {
+        head.pos.y++;
+      }
       moveWithYFocus(tail != null ? tail::moveUp : null);
     }
 
     public void moveLeft() {
+      if (head.getHead() == null) {
+        head.pos.x--;
+      }
       moveWithXFocus(tail != null ? tail::moveLeft : null);
     }
 
     public void moveDown() {
+      if (head.getHead() == null) {
+        head.pos.y--;
+      }
       moveWithYFocus(tail != null ? tail::moveDown : null);
     }
 
@@ -62,13 +74,11 @@ public class Day9 {
     }
 
     private void updateIndexWithXGapAndY() {
-      x = (x + head.x) / 2;
-      y = head.y;
+      pos = new Point((pos.x + head.pos.x) / 2, head.pos.y);
     }
 
     private void updateIndexWithYGapAndX() {
-      x = head.x;
-      y = (y + head.y) / 2;
+      pos = new Point(head.pos.x, (pos.y + head.pos.y) / 2);
     }
 
     private boolean isHeadTailWithoutKnotsInBetween() {
@@ -77,8 +87,7 @@ public class Day9 {
 
     private void updateIndexMultipleKnots(Runnable move) {
       if (hasYGapGreaterThanOne() && hasXGapGreaterThanOne()) {
-        x = (x + head.x) / 2;
-        y = (y + head.y) / 2;
+        pos.setLocation((pos.x + head.pos.x) / 2, (pos.y + head.pos.y) / 2);
       } else if (hasXGapGreaterThanOne()) {
         updateIndexWithXGapAndY();
       } else if (hasYGapGreaterThanOne()) {
@@ -91,102 +100,64 @@ public class Day9 {
     }
 
     private boolean hasYGapGreaterThanOne() {
-      return Math.abs(head.y - y) > 1;
+      return Math.abs(head.pos.y - pos.y) > 1;
     }
 
     private boolean hasXGapGreaterThanOne() {
-      return Math.abs(head.x - x) > 1;
+      return Math.abs(head.pos.x - pos.x) > 1;
     }
   }
 
   static int solvePart1(Resource input) {
-    final List<String> moves = SplitUtils.linesList(input);
-
-    String[][] field = walkBridge(moves, 0);
-
-    return countVisitedPositions(field);
+    return moveRope(input, 0);
   }
 
   static int solvePart2(Resource input) {
-    final List<String> moves = SplitUtils.linesList(input);
-
-    String[][] field = walkBridge(moves, 8);
-
-    return countVisitedPositions(field);
+    return moveRope(input, 8);
   }
 
-  private static String[][] walkBridge(List<String> moves, int knotsInBetween) {
-    //    final int x = 6;
-    //    final int y = 5;
-    //    final int x = 27;
-    //    final int y = 21;
-    final int x = 1000;
-    final int y = 1000;
-
-    String[][] field = new String[y][x];
-
-    //    final int xStart = 0;
-    //    final int yStart = 0;
-    //    final int xStart = 11;
-    //    final int yStart = 5;
+  private static int moveRope(Resource input, int knotsInBetween) {
     final HeadTail headTail = createHeadTail(knotsInBetween);
     final Knot head = headTail.head;
     final Knot tail = headTail.tail;
 
-    for (String move : moves) {
+    final HashSet<Point> visitedPositions = new HashSet<>();
+    visitedPositions.add(tail.pos);
+
+    for (String move : linesList(input)) {
       final String[] splitMove = move.split(" ");
       final String directionToMove = splitMove[0];
       int stepsToMove = parseInt(splitMove[1]);
 
       switch (directionToMove) {
-        case "R" -> {
-          while (stepsToMove > 0) {
-            stepsToMove--;
-            head.x++;
-            head.getTail().moveRight();
-            field[tail.y][tail.x] = "#";
-          }
-        }
-        case "U" -> {
-          while (stepsToMove > 0) {
-            stepsToMove--;
-            head.y++;
-            head.getTail().moveUp();
-            field[tail.y][tail.x] = "#";
-          }
-        }
-        case "L" -> {
-          while (stepsToMove > 0) {
-            stepsToMove--;
-            head.x--;
-            head.getTail().moveLeft();
-            field[tail.y][tail.x] = "#";
-          }
-        }
-        case "D" -> {
-          while (stepsToMove > 0) {
-            stepsToMove--;
-            head.y--;
-            head.getTail().moveDown();
-            field[tail.y][tail.x] = "#";
-          }
-        }
+        case "R" -> move(head.getTail()::moveRight, tail, visitedPositions, stepsToMove);
+        case "U" -> move(head.getTail()::moveUp, tail, visitedPositions, stepsToMove);
+        case "L" -> move(head.getTail()::moveLeft, tail, visitedPositions, stepsToMove);
+        case "D" -> move(head.getTail()::moveDown, tail, visitedPositions, stepsToMove);
         default -> log.warn("Could not recognize direction: {}", directionToMove);
       }
     }
-    return field;
+
+    return visitedPositions.size();
+  }
+
+  private static void move(
+      Runnable moveDirection, Knot tail, HashSet<Point> visitedPositions, int stepsToMove) {
+    while (stepsToMove > 0) {
+      stepsToMove--;
+      moveDirection.run();
+      visitedPositions.add(new Point(tail.pos.x, tail.pos.y));
+    }
   }
 
   private static HeadTail createHeadTail(int knotsInBetween) {
-    final int xStart = 500;
-    final int yStart = 500;
-    final Knot head = new Knot(xStart, yStart, "H", null, null);
-    final Knot tail = new Knot(xStart, yStart, "9", null, null);
+    final Knot head = new Knot(new Point(), "H", null, null);
+    final Knot tail = new Knot(new Point(), "9", null, null);
 
     if (knotsInBetween > 0) {
       Knot lastKnot = null;
       for (int i = 0; i < knotsInBetween; i++) {
-        final Knot knot = new Knot(xStart, yStart, String.valueOf(i + 1), lastKnot, null);
+        final Knot knot = new Knot(new Point(), String.valueOf(i + 1), lastKnot, null);
 
         if (i == 0) {
           head.setTail(knot);
@@ -208,18 +179,5 @@ public class Day9 {
     }
 
     return new HeadTail(head, tail);
-  }
-
-  private static int countVisitedPositions(String[][] field) {
-    int counter = 0;
-    for (int i = field.length - 1; i > -1; i--) {
-      String[] xRow = field[i];
-      for (String element : xRow) {
-        if ("#".equals(element)) {
-          counter++;
-        }
-      }
-    }
-    return counter;
   }
 }
