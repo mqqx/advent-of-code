@@ -132,16 +132,16 @@ public class Day9 {
   }
 
   private static Runnable getMoveDirection(Knot head, String directionToMove) {
-    Runnable moveDirection = null;
-
-    switch (directionToMove) {
-      case "R" -> moveDirection = head.getTail()::moveRight;
-      case "U" -> moveDirection = head.getTail()::moveUp;
-      case "L" -> moveDirection = head.getTail()::moveLeft;
-      case "D" -> moveDirection = head.getTail()::moveDown;
-      default -> log.warn("Could not recognize direction: {}", directionToMove);
-    }
-    return moveDirection;
+    return switch (directionToMove) {
+      case "R" -> head.getTail()::moveRight;
+      case "U" -> head.getTail()::moveUp;
+      case "L" -> head.getTail()::moveLeft;
+      case "D" -> head.getTail()::moveDown;
+      default -> {
+        log.warn("Could not recognize direction: {}", directionToMove);
+        yield null;
+      }
+    };
   }
 
   private static void move(
