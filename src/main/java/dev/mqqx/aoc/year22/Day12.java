@@ -44,7 +44,6 @@ public class Day12 {
 
   private static int findShortestPathLength(Grid grid) {
     final HashMap<Point, Integer> stepsCounter = new HashMap<>();
-    final HashMap<Point, Point> parents = new HashMap<>();
     final LinkedList<Point> queue = new LinkedList<>();
     stepsCounter.put(grid.start, 0);
     queue.add(grid.start);
@@ -66,7 +65,6 @@ public class Day12 {
         final Point coordinates = elevation.coordinates;
         if (nextStepCounter < stepsCounter.getOrDefault(coordinates, Integer.MAX_VALUE)) {
           stepsCounter.put(coordinates, nextStepCounter);
-          parents.put(coordinates, current);
           queue.add(coordinates);
         }
       }
@@ -87,16 +85,20 @@ public class Day12 {
   private static List<Elevation> getSurroundingElevations(
       Character[][] map, Point currentPosition) {
     final Character currentChar = map[currentPosition.y][currentPosition.x];
-    List<Elevation> elevations = new ArrayList<>();
+    final List<Elevation> elevations = new ArrayList<>();
 
-    addElevation(map, currentPosition.y, currentPosition.x - 1, elevations, currentChar);
-    addElevation(map, currentPosition.y - 1, currentPosition.x, elevations, currentChar);
-    addElevation(map, currentPosition.y + 1, currentPosition.x, elevations, currentChar);
-    addElevation(map, currentPosition.y, currentPosition.x + 1, elevations, currentChar);
+    addElevationIfIsAtMostOneHigher(
+        map, currentPosition.y, currentPosition.x - 1, elevations, currentChar);
+    addElevationIfIsAtMostOneHigher(
+        map, currentPosition.y - 1, currentPosition.x, elevations, currentChar);
+    addElevationIfIsAtMostOneHigher(
+        map, currentPosition.y + 1, currentPosition.x, elevations, currentChar);
+    addElevationIfIsAtMostOneHigher(
+        map, currentPosition.y, currentPosition.x + 1, elevations, currentChar);
     return elevations;
   }
 
-  private static void addElevation(
+  private static void addElevationIfIsAtMostOneHigher(
       Character[][] map, int y, int x, List<Elevation> elevations, Character currentChar) {
     if (y > -1 && y < map.length && x < map[0].length && x > -1) {
       Character surroundingChar = map[y][x];
