@@ -3,9 +3,9 @@ package dev.mqqx.aoc.year22;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.Math.floor;
+import static java.util.stream.Collectors.toList;
 
 import dev.mqqx.aoc.util.SplitUtils;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -85,10 +85,12 @@ public class Day11 {
             monkeyString -> {
               final List<String> monkeyLines = monkeyString.lines().toList();
 
-              List<Long> items =
+              // list needs to be modifiable, as items from other monkey will eventually be added
+              @java.lang.SuppressWarnings("squid:S6204")
+              final List<Long> items =
                   Arrays.stream(monkeyLines.get(1).split(":")[1].trim().split(", "))
                       .map(Long::parseLong)
-                      .toList();
+                      .collect(toList());
 
               final LongFunction<Long> operation = parseOperation(monkeyLines.get(2));
 
@@ -97,7 +99,7 @@ public class Day11 {
               final int falseMonkeyId = parseInt(monkeyLines.get(5).substring(29).trim());
 
               return new Monkey(
-                  new ArrayList<>(items),
+                  items,
                   operation,
                   testDivisibleBy,
                   trueMonkeyId,
