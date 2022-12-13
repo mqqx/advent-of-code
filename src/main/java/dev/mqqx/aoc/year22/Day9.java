@@ -5,6 +5,7 @@ import static java.lang.Integer.parseInt;
 
 import java.awt.Point;
 import java.util.HashSet;
+import java.util.function.BooleanSupplier;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -56,16 +57,17 @@ public class Day9 {
     }
 
     private void moveWithXFocus(Runnable move) {
-      if (isHeadTailWithoutKnotsInBetween() && hasXGapGreaterThanOne()) {
-        updateIndexWithXGapAndY();
-      } else {
-        updateIndexMultipleKnots(move);
-      }
+      moveWithFocus(this::hasXGapGreaterThanOne, this::updateIndexWithXGapAndY, move);
     }
 
     private void moveWithYFocus(Runnable move) {
-      if (isHeadTailWithoutKnotsInBetween() && hasYGapGreaterThanOne()) {
-        updateIndexWithYGapAndX();
+      moveWithFocus(this::hasYGapGreaterThanOne, this::updateIndexWithYGapAndX, move);
+    }
+
+    private void moveWithFocus(
+        BooleanSupplier hasGapGreaterThanOne, Runnable updateIndexWithGap, Runnable move) {
+      if (isHeadTailWithoutKnotsInBetween() && hasGapGreaterThanOne.getAsBoolean()) {
+        updateIndexWithGap.run();
       } else {
         updateIndexMultipleKnots(move);
       }
