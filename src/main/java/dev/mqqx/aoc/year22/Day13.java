@@ -1,7 +1,8 @@
 package dev.mqqx.aoc.year22;
 
-import static dev.mqqx.aoc.util.SplitUtils.linesList;
+import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static dev.mqqx.aoc.util.SplitUtils.read;
+import static java.util.stream.IntStream.range;
 
 import java.util.List;
 import lombok.AccessLevel;
@@ -16,31 +17,21 @@ import org.springframework.core.io.Resource;
 public class Day13 {
 
   static int solvePart1(Resource input) {
-    final List<String> strings = linesList(input, "\n\n");
     final JsonParser parser = JsonParserFactory.getJsonParser();
+    final String[][] pairs =
+        lines(input, "\n\n").map(pairString -> pairString.split("\n")).toArray(String[][]::new);
 
-    int sum = 0;
-
-    for (int i = 0; i < strings.size(); i++) {
-      final String[] listStrings = strings.get(i).split("\n");
-      final List<Object> leftList = parser.parseList(listStrings[0]);
-      final List<Object> rightList = parser.parseList(listStrings[1]);
-
-      final int isOrdered = compare(leftList, rightList);
-      if (isOrdered > -1) {
-        sum += i + 1;
-      }
-    }
-
-    return sum;
+    return range(0, pairs.length)
+        .filter(i -> compare(parser.parseList(pairs[i][0]), parser.parseList(pairs[i][1])) > -1)
+        .map(i -> i + 1)
+        .sum();
   }
 
   static int solvePart2(Resource input) {
     final JsonParser parser = JsonParserFactory.getJsonParser();
-
-    final String signalString = read(input).replace("\n\n", "\n") + "\n[[2]]\n[[6]]";
-    final List<List<Object>> lists =
-        signalString
+    final String signalsString = read(input).replace("\n\n", "\n") + "\n[[2]]\n[[6]]";
+    final List<List<Object>> orderedSignalLists =
+        signalsString
             .lines()
             .map(parser::parseList)
             .sorted(
@@ -52,17 +43,8 @@ public class Day13 {
                     })
             .toList();
 
-    int index2 = 1;
-    int index6 = 1;
-
-    for (int i = 0; i < lists.size(); i++) {
-      if (lists.get(i).equals(List.of(List.of(2L)))) {
-        index2 += i;
-      } else if (lists.get(i).equals(List.of(List.of(6L)))) {
-        index6 += i;
-      }
-    }
-
+    int index2 = 1 + orderedSignalLists.indexOf(List.of(List.of(2L)));
+    int index6 = 1 + orderedSignalLists.indexOf(List.of(List.of(6L)));
     return index2 * index6;
   }
 
@@ -71,29 +53,9 @@ public class Day13 {
     final boolean isRightList = right instanceof List<?>;
 
     if (isLeftList && isRightList) {
-      final List<?> leftList = (List<?>) left;
-      final List<?> rightList = (List<?>) right;
-      final boolean isLeftEmpty = leftList.isEmpty();
-      final boolean isRightEmpty = ((List<?>) right).isEmpty();
-      if (isLeftEmpty && isRightEmpty) {
-        return 0;
-      } else if (isLeftEmpty) {
-        return 1;
-      } else if (isRightEmpty) {
-        return -1;
-      } else {
-        final int comparison = compare(leftList.get(0), rightList.get(0));
-
-        if (comparison == 0) {
-          return compare(
-              leftList.subList(1, leftList.size()), rightList.subList(1, rightList.size()));
-        }
-
-        return comparison;
-      }
-
+      return compareLists((List<?>) left, (List<?>) right);
     } else if (isLeftList || isRightList) {
-      return compare(toList(left), toList(right));
+      return compareLists(toList(left), toList(right));
     } else {
       if ((long) left > (long) right) {
         return -1;
@@ -103,6 +65,26 @@ public class Day13 {
     }
 
     return 0;
+  }
+
+  private static int compareLists(List<?> left, List<?> right) {
+    final boolean isLeftEmpty = left.isEmpty();
+    final boolean isRightEmpty = right.isEmpty();
+    if (isLeftEmpty && isRightEmpty) {
+      return 0;
+    } else if (isLeftEmpty) {
+      return 1;
+    } else if (isRightEmpty) {
+      return -1;
+    } else {
+      final int comparison = compare(left.get(0), right.get(0));
+
+      if (comparison == 0) {
+        return compare(left.subList(1, left.size()), right.subList(1, right.size()));
+      }
+
+      return comparison;
+    }
   }
 
   private static List<Object> toList(Object leftObject) {
