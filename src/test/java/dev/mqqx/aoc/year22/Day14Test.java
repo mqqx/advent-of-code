@@ -19,7 +19,6 @@ class Day14Test {
   void testSolvePart1() {
     final Resource resource = new ClassPathResource("year22/day14/14");
 
-    // 587 is too low
     assertThat(Day14.solvePart1(resource)).isEqualTo(665);
   }
 
