@@ -5,7 +5,9 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.abs;
 
 import java.awt.Point;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -16,25 +18,31 @@ public class Day15 {
   record SensorBeacon(Point sensor, Point beacon, int manDist) {}
 
   static int solvePart1(Resource input, int yToCheck) {
+    final long millis = System.currentTimeMillis();
     final List<SensorBeacon> sensorBeacons = getSensorBeacons(input);
+    final Set<Integer> blockedX = new HashSet<>();
 
-    int counter = 0;
-    for (int i = -1_000_000; i < 5_000_000; i++) {
-      for (SensorBeacon sensorBeacon : sensorBeacons) {
-        final int manDistToX =
-            abs(i - sensorBeacon.sensor.x) + abs(yToCheck - sensorBeacon.sensor.y);
+    for (SensorBeacon sensorBeacon : sensorBeacons) {
 
-        if (sensorBeacon.beacon.equals(new Point(i, yToCheck))) {
-          System.out.println("break me out");
-          break;
-        } else if (manDistToX <= sensorBeacon.manDist) {
-          counter++;
-          break;
+      final int yGap = abs(yToCheck - sensorBeacon.sensor.y);
+      if (yGap <= sensorBeacon.manDist) {
+        final int xMin = sensorBeacon.sensor.x - sensorBeacon.manDist + yGap;
+        final int xMax = sensorBeacon.sensor.x + sensorBeacon.manDist - yGap;
+        //        System.out.println("Range: " + xMin + ", " + xMax + " for: " + sensorBeacon);
+        for (int xToCheck = xMin; xToCheck <= xMax; xToCheck++) {
+          final int manDistToX = abs(xToCheck - sensorBeacon.sensor.x) + yGap;
+
+          if (manDistToX <= sensorBeacon.manDist
+              && !sensorBeacon.beacon.equals(new Point(xToCheck, yToCheck))) {
+            blockedX.add(xToCheck);
+          }
         }
       }
     }
+    final long part1finished = System.currentTimeMillis() - millis;
+    System.out.println("part 1 finished: " + part1finished);
 
-    return counter;
+    return blockedX.size();
   }
 
   private static List<SensorBeacon> getSensorBeacons(Resource input) {
@@ -43,11 +51,11 @@ public class Day15 {
         .map(
             splitLine -> {
               final String[] sensor = splitLine[0].split(",");
-              final int sensorX = parseInt(sensor[0].substring(sensor[0].indexOf("=") + 1));
-              final int sensorY = parseInt(sensor[1].substring(sensor[1].indexOf("=") + 1));
+              final int sensorX = parseCoordinate(sensor[0]);
+              final int sensorY = parseCoordinate(sensor[1]);
               final String[] beacon = splitLine[1].split(",");
-              final int beaconX = parseInt(beacon[0].substring(beacon[0].indexOf("=") + 1));
-              final int beaconY = parseInt(beacon[1].substring(beacon[1].indexOf("=") + 1));
+              final int beaconX = parseCoordinate(beacon[0]);
+              final int beaconY = parseCoordinate(beacon[1]);
 
               return new SensorBeacon(
                   new Point(sensorX, sensorY),
@@ -55,6 +63,10 @@ public class Day15 {
                   abs(sensorX - beaconX) + abs(sensorY - beaconY));
             })
         .toList();
+  }
+
+  private static int parseCoordinate(String coordinateToParse) {
+    return parseInt(coordinateToParse.substring(coordinateToParse.indexOf("=") + 1));
   }
 
   static long solvePart2(Resource input) {
