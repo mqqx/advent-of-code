@@ -1,9 +1,12 @@
 package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.SplitUtils.lines;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -11,87 +14,82 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day20 {
 
-  record Position(int initialIndex, long value) {
-  }
+  record Number(int initialIndex, long value) {}
 
   static long solvePart1(Resource input) {
-    final List<Integer> originalList = lines(input).mapToInt(Integer::parseInt).boxed().toList();
-    final List<Position> rotatingList = initializeRotatingList(originalList);
+    final List<Number> listToRotate = initializeList(input);
 
-    rotateList(originalList, rotatingList);
+    rotateList(listToRotate);
 
-    return getGrooveCoordinatesSum(rotatingList);
+    return getGrooveCoordinatesSum(listToRotate);
   }
 
-  private static void rotateList(List<Integer> originalList, List<Position> rotatingList) {
-    for (int i = 0; i < originalList.size(); i++) {
-      int currentIndex = -1;
-      for (int j = 0; j < rotatingList.size(); j++) {
-        if (rotatingList.get(j).initialIndex == i) {
-          currentIndex = j;
-        }
-      }
+  private static void rotateList(List<Number> listToRotate) {
+    for (int i = 0; i < listToRotate.size(); i++) {
+      final int originalNumberIndex = i;
+      final int currentNumberIndex =
+          range(0, listToRotate.size())
+              .filter(j -> listToRotate.get(j).initialIndex == originalNumberIndex)
+              .findFirst()
+              .orElse(-1);
 
-      final Position numberToMove = rotatingList.remove(currentIndex);
-      final int newIndexToAdd = getNewIndexToAdd(rotatingList.size(), currentIndex, numberToMove);
+      // as each remove is followed by an add the size of the list never changes outside each
+      // iteration
+      @java.lang.SuppressWarnings("squid:S5413")
+      final Number numberToMove = listToRotate.remove(currentNumberIndex);
+      final int newIndex = calculateNewIndex(listToRotate.size(), currentNumberIndex, numberToMove);
 
-      rotatingList.add(newIndexToAdd, numberToMove);
+      listToRotate.add(newIndex, numberToMove);
     }
   }
 
-  private static List<Position> initializeRotatingList(List<Integer> originalList) {
-    return initializeRotatingList(originalList, 1);
+  private static List<Number> initializeList(Resource input) {
+    return initializeList(input, 1);
   }
 
-  private static List<Position> initializeRotatingList(List<Integer> originalList, int decryptionKey) {
-    final List<Position> rotatingList = new ArrayList<>();
+  // list needs to be modifiable, as moved numbers will be removed and added for automated shifting
+  @java.lang.SuppressWarnings("squid:S6204")
+  private static List<Number> initializeList(Resource input, int decryptionKey) {
+    final AtomicInteger index = new AtomicInteger();
 
-    for (int i = 0; i < originalList.size(); i++) {
-      final int value = originalList.get(i);
-      rotatingList.add(new Position(i, (long) value * decryptionKey));
-    }
-    return rotatingList;
+    return lines(input)
+        .mapToInt(Integer::parseInt)
+        .mapToObj(value -> new Number(index.getAndIncrement(), (long) value * decryptionKey))
+        .collect(toList());
   }
 
-  private static int getNewIndexToAdd(int rotatingListSize, int currentIndex, Position numberToMove) {
+  private static int calculateNewIndex(
+      int listToRotateSize, int currentIndex, Number numberToMove) {
     final long newIndex = currentIndex + numberToMove.value;
     final int newIndexToAdd;
-    if (newIndex > rotatingListSize - 1) {
-      newIndexToAdd = (int) (newIndex % rotatingListSize);
+    if (newIndex > listToRotateSize - 1) {
+      newIndexToAdd = (int) (newIndex % listToRotateSize);
     } else if (newIndex < 0) {
-      newIndexToAdd = rotatingListSize + (int) (newIndex % rotatingListSize);
+      newIndexToAdd = listToRotateSize + (int) (newIndex % listToRotateSize);
     } else if (newIndex == 0) {
-      newIndexToAdd = rotatingListSize;
+      newIndexToAdd = listToRotateSize;
     } else {
       newIndexToAdd = (int) newIndex;
     }
     return newIndexToAdd;
   }
 
-  private static long getGrooveCoordinatesSum(List<Position> finalList) {
-    int zeroIndex = -1;
-    for (int i = 0; i < finalList.size(); i++) {
-      if (finalList.get(i).value == 0) {
-        zeroIndex = i;
-        break;
-      }
-    }
-
-    final long one1000th = finalList.get((1_000 + zeroIndex) % finalList.size()).value;
-    final long two1000th = finalList.get((2_000 + zeroIndex) % finalList.size()).value;
-    final long three1000th = finalList.get((3_000 + zeroIndex) % finalList.size()).value;
-
-    return one1000th + two1000th + three1000th;
+  private static long getGrooveCoordinatesSum(List<Number> rotatedList) {
+    final int zeroIndex =
+        range(0, rotatedList.size())
+            .filter(i -> rotatedList.get(i).value == 0)
+            .findFirst()
+            .orElse(-1);
+    return IntStream.of(1_000, 2_000, 3_000)
+        .mapToLong(i -> rotatedList.get(((i + zeroIndex) % rotatedList.size())).value)
+        .sum();
   }
 
   static long solvePart2(Resource input) {
-    final List<Integer> originalList = lines(input).mapToInt(Integer::parseInt).boxed().toList();
-    final List<Position> rotatingList = initializeRotatingList(originalList, 811_589_153);
+    final List<Number> listToRotate = initializeList(input, 811_589_153);
 
-    for (int i = 0; i < 10; i++) {
-      rotateList(originalList, rotatingList);
-    }
+    range(0, 10).forEach(i -> rotateList(listToRotate));
 
-    return getGrooveCoordinatesSum(rotatingList);
+    return getGrooveCoordinatesSum(listToRotate);
   }
 }

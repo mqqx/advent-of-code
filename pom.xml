@@ -75,6 +75,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <!-- Enable https://github.com/google/google-java-format -->
+                    <dependency>
+                        <groupId>com.cosium.code</groupId>
+                        <artifactId>google-java-format</artifactId>
+                        <version>4.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
