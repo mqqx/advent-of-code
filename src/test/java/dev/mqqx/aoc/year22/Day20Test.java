@@ -12,27 +12,27 @@ class Day20Test {
   void testSolvePart1Example() {
     final Resource example = new ClassPathResource("year22/day20/20-example");
 
-    assertThat(Day20.solvePart1(example)).isEqualTo(3);
+    assertThat(Day20.solvePart1(example)).isEqualTo(3L);
   }
 
   @Test
   void testSolvePart1() {
     final Resource resource = new ClassPathResource("year22/day20/20");
 
-    assertThat(Day20.solvePart1(resource)).isEqualTo(7_395);
+    assertThat(Day20.solvePart1(resource)).isEqualTo(7_395L);
   }
 
   @Test
   void testSolvePart2Example() {
     final Resource example = new ClassPathResource("year22/day20/20-example");
 
-    assertThat(Day20.solvePart2(example)).isEqualTo(1_623_178_306);
+    assertThat(Day20.solvePart2(example)).isEqualTo(1_623_178_306L);
   }
 
   @Test
   void testSolvePart2() {
     final Resource resource = new ClassPathResource("year22/day20/20");
 
-    assertThat(Day20.solvePart2(resource)).isEqualTo(157);
+    assertThat(Day20.solvePart2(resource)).isEqualTo(1_640_221_678_213L);
   }
 }
