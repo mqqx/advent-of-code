@@ -18,24 +18,21 @@ class Day21Test {
   @Test
   void testSolvePart1() {
     final Resource resource = new ClassPathResource("year22/day21/21");
-    // long  1905357036
-    // long  1905357036L
-    // long -2389610260
 
-    assertThat(Day21.solvePart1(resource)).isEqualTo(84244467642604L);
+    assertThat(Day21.solvePart1(resource)).isEqualTo(84_244_467_642_604L);
   }
 
   @Test
   void testSolvePart2Example() {
     final Resource example = new ClassPathResource("year22/day21/21-example");
 
-    assertThat(Day21.solvePart2(example)).isEqualTo(157);
+    assertThat(Day21.solvePart2(example)).isEqualTo(301);
   }
 
   @Test
   void testSolvePart2() {
     final Resource resource = new ClassPathResource("year22/day21/21");
 
-    assertThat(Day21.solvePart2(resource)).isEqualTo(157);
+    assertThat(Day21.solvePart2(resource)).isEqualTo(3_759_569_926_192L);
   }
 }
