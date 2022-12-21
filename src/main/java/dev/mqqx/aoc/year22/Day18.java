@@ -4,7 +4,6 @@ import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static java.lang.Integer.parseInt;
 
 import java.util.List;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,23 +18,23 @@ public class Day18 {
   @Data
   @AllArgsConstructor
   private static class GridSize {
-    int xMin;
-    int xMax;
-    int yMin;
-    int yMax;
-    int zMin;
-    int zMax;
+    int minX;
+    int maxX;
+    int minY;
+    int maxY;
+    int minZ;
+    int maxZ;
 
     int getWidth() {
-      return xMax - xMin + 1;
+      return maxX - minX + 1 + 1 + 1;
     }
 
     int getHeight() {
-      return yMax - yMin + 1;
+      return maxY - minY + 1 + 1 + 1;
     }
 
     int getDepth() {
-      return zMax - zMin + 1;
+      return maxZ - minZ + 1 + 1 + 1;
     }
 
     int[][][] getGrid() {
@@ -44,82 +43,99 @@ public class Day18 {
   }
 
   static int solvePart1(Resource input) {
+    return getTotalSides(input, false);
+  }
+
+  private static int getTotalSides(Resource input, boolean isPart2) {
     final GridSize gridSize = new GridSize(2, 2, 2, 2, 2, 2);
+    final List<Cube> cubes = initializeCubes(input, gridSize);
+    final int[][][] grid = fillGridWithCubes(gridSize, cubes);
 
-    final List<Cube> cubes =
-        lines(input)
-            .map(line -> line.split(","))
-            .map(
-                splitLine -> {
-                  final int x = parseInt(splitLine[0]);
-                  final int y = parseInt(splitLine[1]);
-                  final int z = parseInt(splitLine[2]);
+    if (isPart2) {
+      return -1;
+    }
 
-                  if (gridSize.xMin > x) {
-                    gridSize.setXMin(x);
-                  }
-                  if (gridSize.xMax < x) {
-                    gridSize.setXMax(x);
-                  }
-                  if (gridSize.yMin > y) {
-                    gridSize.setYMin(y);
-                  }
-                  if (gridSize.yMax < y) {
-                    gridSize.setYMax(y);
-                  }
-                  if (gridSize.zMin > z) {
-                    gridSize.setZMin(z);
-                  }
-                  if (gridSize.zMax < z) {
-                    gridSize.setZMax(z);
-                  }
-                  return new Cube(x, y, z);
-                })
-            .toList();
+    return calculateTotalSides(gridSize, grid);
+  }
 
-    final int[][][] grid = gridSize.getGrid();
-    cubes.forEach(
-        cube ->
-            grid[cube.x - gridSize.getXMin()][cube.y - gridSize.getYMin()][
-                    cube.z - gridSize.getZMin()] =
-                1);
-
+  private static int calculateTotalSides(GridSize gridSize, int[][][] grid) {
     int totalSides = 0;
-    for (int curX = 0; curX < grid.length; curX++) {
-      for (int curY = 0; curY < grid[curX].length; curY++) {
-        for (int curZ = 0; curZ < grid[curX][curY].length; curZ++) {
-          if (grid[curX][curY][curZ] != 1) {
+
+    for (int x = 0; x < grid.length; x++) {
+      for (int y = 0; y < grid[x].length; y++) {
+        for (int z = 0; z < grid[x][y].length; z++) {
+
+          if (grid[x][y][z] != 2) {
             continue;
           }
 
-          if (curX + 1 == gridSize.getWidth() || grid[curX + 1][curY][curZ] != 1) {
+          if (x + 1 == gridSize.getWidth() || grid[x + 1][y][z] != 2) {
             totalSides++;
           }
-          if (curX - 1 < 0 || grid[curX - 1][curY][curZ] != 1) {
+          if (x - 1 < 0 || grid[x - 1][y][z] != 2) {
             totalSides++;
           }
-          if (curY + 1 == gridSize.getHeight() || grid[curX][curY + 1][curZ] != 1) {
+          if (y + 1 == gridSize.getHeight() || grid[x][y + 1][z] != 2) {
             totalSides++;
           }
-          if (curY - 1 < 0 || grid[curX][curY - 1][curZ] != 1) {
+          if (y - 1 < 0 || grid[x][y - 1][z] != 2) {
             totalSides++;
           }
-          if (curZ + 1 == gridSize.getDepth() || grid[curX][curY][curZ + 1] != 1) {
+          if (z + 1 == gridSize.getDepth() || grid[x][y][z + 1] != 2) {
             totalSides++;
           }
-          if (curZ - 1 < 0 || grid[curX][curY][curZ - 1] != 1) {
+          if (z - 1 < 0 || grid[x][y][z - 1] != 2) {
             totalSides++;
           }
         }
       }
     }
-
     return totalSides;
   }
 
-  static int solvePart2(Resource input) {
-    final Stream<String> strings = lines(input);
+  private static int[][][] fillGridWithCubes(GridSize gridSize, List<Cube> cubes) {
+    final int[][][] grid = gridSize.getGrid();
+    cubes.forEach(
+        cube ->
+            grid[cube.x - gridSize.getMinX() + 1][cube.y - gridSize.getMinY() + 1][
+                    cube.z - gridSize.getMinZ() + 1] =
+                2);
+    return grid;
+  }
 
-    return 157;
+  private static List<Cube> initializeCubes(Resource input, GridSize gridSize) {
+    return lines(input)
+        .map(line -> line.split(","))
+        .map(
+            splitLine -> {
+              final int x = parseInt(splitLine[0]);
+              final int y = parseInt(splitLine[1]);
+              final int z = parseInt(splitLine[2]);
+
+              if (gridSize.minX > x) {
+                gridSize.setMinX(x);
+              }
+              if (gridSize.maxX < x) {
+                gridSize.setMaxX(x);
+              }
+              if (gridSize.minY > y) {
+                gridSize.setMinY(y);
+              }
+              if (gridSize.maxY < y) {
+                gridSize.setMaxY(y);
+              }
+              if (gridSize.minZ > z) {
+                gridSize.setMinZ(z);
+              }
+              if (gridSize.maxZ < z) {
+                gridSize.setMaxZ(z);
+              }
+              return new Cube(x, y, z);
+            })
+        .toList();
+  }
+
+  static int solvePart2(Resource input) {
+    return getTotalSides(input, true);
   }
 }
