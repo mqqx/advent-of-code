@@ -9,8 +9,10 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day22 {
   static int solvePart1(Resource input) {
@@ -123,7 +125,7 @@ public class Day22 {
       }
     }
 
-    void moveOneStep(Boolean[][] grid) {
+    protected void moveOneStep(Boolean[][] grid) {
       if (direction == Direction.RIGHT) {
         moveRight(grid);
       } else if (direction == Direction.DOWN) {
@@ -135,7 +137,7 @@ public class Day22 {
       }
     }
 
-    private void moveUp(Boolean[][] grid) {
+    protected void moveUp(Boolean[][] grid) {
       int nextY = y - 1;
       nextY += grid.length;
       nextY %= grid.length;
@@ -149,7 +151,7 @@ public class Day22 {
       }
     }
 
-    private void moveLeft(Boolean[][] grid) {
+    protected void moveLeft(Boolean[][] grid) {
       int nextX = x - 1;
       nextX += grid[y].length;
       nextX %= grid[y].length;
@@ -163,7 +165,7 @@ public class Day22 {
       }
     }
 
-    private void moveDown(Boolean[][] grid) {
+    protected void moveDown(Boolean[][] grid) {
       int nextY = y + 1;
       nextY %= grid.length;
       while (grid[nextY][x] == null) {
@@ -175,7 +177,7 @@ public class Day22 {
       }
     }
 
-    private void moveRight(Boolean[][] grid) {
+    protected void moveRight(Boolean[][] grid) {
       int nextX = x + 1;
       nextX %= grid[y].length;
       while (grid[y][nextX] == null) {
@@ -194,187 +196,224 @@ public class Day22 {
     }
 
     @Override
-    void moveOneStep(Boolean[][] grid) {
-      if (direction == Direction.RIGHT) {
-        int nextX = x + 1;
-        if (nextX >= grid[y].length || grid[y][nextX] == null) {
-          moveOnCube(nextX, y, grid);
-        } else if (Boolean.TRUE.equals(grid[y][nextX])) {
-          x = nextX;
-        }
-      } else if (direction == Direction.DOWN) {
-        int nextY = y + 1;
-        if (nextY >= grid.length || grid[nextY][x] == null) {
-          moveOnCube(x, nextY, grid);
-        } else if (Boolean.TRUE.equals(grid[nextY][x])) {
-          y = nextY;
-        }
-      } else if (direction == Direction.LEFT) {
-        int nextX = x - 1;
-        if (nextX < 0 || grid[y][nextX] == null) {
-          moveOnCube(nextX, y, grid);
-        } else if (Boolean.TRUE.equals(grid[y][nextX])) {
-          x = nextX;
-        }
-      } else if (direction == Direction.UP) {
-        int nextY = y - 1;
-        if (nextY < 0 || grid[nextY][x] == null) {
-          moveOnCube(x, nextY, grid);
-        } else if (Boolean.TRUE.equals(grid[nextY][x])) {
-          y = nextY;
-        }
+    protected void moveUp(Boolean[][] grid) {
+      int nextY = y - 1;
+      if (nextY < 0 || grid[nextY][x] == null) {
+        moveOnCube(x, nextY, grid);
+      } else if (Boolean.TRUE.equals(grid[nextY][x])) {
+        y = nextY;
+      }
+    }
+
+    @Override
+    protected void moveLeft(Boolean[][] grid) {
+      int nextX = x - 1;
+      if (nextX < 0 || grid[y][nextX] == null) {
+        moveOnCube(nextX, y, grid);
+      } else if (Boolean.TRUE.equals(grid[y][nextX])) {
+        x = nextX;
+      }
+    }
+
+    @Override
+    protected void moveDown(Boolean[][] grid) {
+      int nextY = y + 1;
+      if (nextY >= grid.length || grid[nextY][x] == null) {
+        moveOnCube(x, nextY, grid);
+      } else if (Boolean.TRUE.equals(grid[nextY][x])) {
+        y = nextY;
+      }
+    }
+
+    @Override
+    protected void moveRight(Boolean[][] grid) {
+      int nextX = x + 1;
+      if (nextX >= grid[y].length || grid[y][nextX] == null) {
+        moveOnCube(nextX, y, grid);
+      } else if (Boolean.TRUE.equals(grid[y][nextX])) {
+        x = nextX;
       }
     }
 
     // TODO: make generic to work with any input size
     private void moveOnCube(int nextX, int nextY, Boolean[][] grid) {
+      final int face = getFace(x, y, grid);
+      switch (face) {
+        case 1 -> moveFrom1(nextX, nextY, grid);
+        case 2 -> moveFrom2(nextX, nextY, grid);
+        case 3 -> moveFrom3(nextX, grid);
+        case 4 -> moveFrom4(nextX, nextY, grid);
+        case 5 -> moveFrom5(nextX, nextY, grid);
+        case 6 -> moveFrom6(nextX, nextY, grid);
+        default -> log.warn("Wrong face: {}", face);
+      }
+    }
+
+    private void moveFrom6(int nextX, int nextY, Boolean[][] grid) {
       final int height = grid.length;
       final int width = grid[0].length;
 
-      switch (getFace(x, y, grid)) {
-        case 1 -> {
-          if (nextY < 0) {
-            // Moving towards face 6
-            nextY = x + height / 2;
-            nextX = 0;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.RIGHT;
-            }
-          } else if (nextX < width / 3) {
-            // Moving into face 5
-            nextY = 3 * height / 4 - 1 - y;
-            nextX = 0;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.RIGHT;
-            }
-          }
+      if (nextX < 0) {
+        // Moving into face 1
+        nextX = y - height / 2;
+        nextY = 0;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.DOWN;
         }
-        case 2 -> {
-          if (nextY < 0) {
-            // Moving into face 6
-            nextX = x - 2 * width / 3;
-            nextY = height - 1;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.UP;
-            }
-          } else if (nextY >= height / 4) {
-            // Moving into face 3
-            nextX = 2 * width / 3 - 1;
-            nextY = x - height / 4;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.LEFT;
-            }
-          } else if (nextX >= 3 * height / 4) {
-            // Moving into face 4
-            nextX = 2 * width / 3 - 1;
-            nextY = 3 * height / 4 - 1 - y;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.LEFT;
-            }
-          }
+      } else if (nextX > 49) {
+        // Moving into face 4
+        nextX = y - height / 2;
+        nextY = 3 * height / 4 - 1;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.UP;
         }
-        case 3 -> {
-          if (nextX < width / 3) {
-            // Moving into face 5
-            nextX = y - width / 3;
-            nextY = height / 2;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.DOWN;
-            }
-          } else if (nextX >= 2 * width / 3 - 1) {
-            // Moving into face 2
-            nextX = y + width / 3;
-            nextY = height / 4 - 1;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.UP;
-            }
-          }
+      } else if (nextY >= height) {
+        // Moving into face 2
+        nextX = x + 2 * width / 3;
+        nextY = 0;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.DOWN;
         }
-        case 4 -> {
-          if (nextX >= 2 * width / 3) {
-            // Moving into face 2
-            nextX = width - 1;
-            nextY = 3 * height / 4 - 1 - y;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.LEFT;
-            }
-          } else if (nextY >= 3 * height / 4) {
-            // Moving into face 6
-            nextX = width / 3 - 1;
-            nextY = x + height / 2;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.LEFT;
-            }
-          }
+      }
+    }
+
+    private void moveFrom5(int nextX, int nextY, Boolean[][] grid) {
+      final int height = grid.length;
+      final int width = grid[0].length;
+
+      if (nextY < height / 2) {
+        // Moving into face 3
+        nextX = width / 3;
+        nextY = x + height / 4;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.RIGHT;
         }
-        case 5 -> {
-          if (nextY < height / 2) {
-            // Moving into face 3
-            nextX = width / 3;
-            nextY = x + height / 4;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.RIGHT;
-            }
-          } else if (nextX < 0) {
-            // Moving into face 1
-            nextX = width / 3;
-            nextY = 3 * height / 4 - 1 - y;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.RIGHT;
-            }
-          }
+      } else if (nextX < 0) {
+        // Moving into face 1
+        nextX = width / 3;
+        nextY = 3 * height / 4 - 1 - y;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.RIGHT;
         }
-        case 6 -> {
-          if (nextX < 0) {
-            // Moving into face 1
-            nextX = y - height / 2;
-            nextY = 0;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.DOWN;
-            }
-          } else if (nextX > 49) {
-            // Moving into face 4
-            nextX = y - height / 2;
-            nextY = 3 * height / 4 - 1;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.UP;
-            }
-          } else if (nextY >= height) {
-            // Moving into face 2
-            nextX = x + 2 * width / 3;
-            nextY = 0;
-            if (Boolean.TRUE.equals(grid[nextY][nextX])) {
-              x = nextX;
-              y = nextY;
-              direction = Direction.DOWN;
-            }
-          }
+      }
+    }
+
+    private void moveFrom4(int nextX, int nextY, Boolean[][] grid) {
+      final int height = grid.length;
+      final int width = grid[0].length;
+
+      if (nextX >= 2 * width / 3) {
+        // Moving into face 2
+        nextX = width - 1;
+        nextY = 3 * height / 4 - 1 - y;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.LEFT;
+        }
+      } else if (nextY >= 3 * height / 4) {
+        // Moving into face 6
+        nextX = width / 3 - 1;
+        nextY = x + height / 2;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.LEFT;
+        }
+      }
+    }
+
+    private void moveFrom3(int nextX, Boolean[][] grid) {
+      final int height = grid.length;
+      final int width = grid[0].length;
+
+      int nextY;
+      if (nextX < width / 3) {
+        // Moving into face 5
+        nextX = y - width / 3;
+        nextY = height / 2;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.DOWN;
+        }
+      } else if (nextX >= 2 * width / 3 - 1) {
+        // Moving into face 2
+        nextX = y + width / 3;
+        nextY = height / 4 - 1;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.UP;
+        }
+      }
+    }
+
+    private void moveFrom2(int nextX, int nextY, Boolean[][] grid) {
+      final int height = grid.length;
+      final int width = grid[0].length;
+
+      if (nextY < 0) {
+        // Moving into face 6
+        nextX = x - 2 * width / 3;
+        nextY = height - 1;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.UP;
+        }
+      } else if (nextY >= height / 4) {
+        // Moving into face 3
+        nextX = 2 * width / 3 - 1;
+        nextY = x - height / 4;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.LEFT;
+        }
+      } else if (nextX >= 3 * height / 4) {
+        // Moving into face 4
+        nextX = 2 * width / 3 - 1;
+        nextY = 3 * height / 4 - 1 - y;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.LEFT;
+        }
+      }
+    }
+
+    private void moveFrom1(int nextX, int nextY, Boolean[][] grid) {
+      final int height = grid.length;
+      final int width = grid[0].length;
+
+      if (nextY < 0) {
+        // Moving towards face 6
+        nextY = x + height / 2;
+        nextX = 0;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.RIGHT;
+        }
+      } else if (nextX < width / 3) {
+        // Moving into face 5
+        nextY = 3 * height / 4 - 1 - y;
+        nextX = 0;
+        if (Boolean.TRUE.equals(grid[nextY][nextX])) {
+          x = nextX;
+          y = nextY;
+          direction = Direction.RIGHT;
         }
       }
     }
