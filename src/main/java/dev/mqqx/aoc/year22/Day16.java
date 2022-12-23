@@ -3,8 +3,8 @@ package dev.mqqx.aoc.year22;
 import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.max;
+import static java.util.Arrays.stream;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,15 +18,15 @@ import org.springframework.core.io.Resource;
 
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day16 {
+
+  private static final String START_VALVE_LOCATION = "AA";
+
   record LinkedValveMeta(String id, int minutesToGetTo) {}
 
-  record Valve(String id, int flowRate, boolean isOpen, Set<LinkedValveMeta> linkedValvesMeta) {}
+  record Valve(String id, int flowRate, Set<LinkedValveMeta> linkedValvesMeta) {}
 
   static int solvePart1(Resource input) {
-    final Map<String, Valve> valveMap = new HashMap<>();
-
-    populateValves(input, valveMap);
-    replaceZeroFlowRateValves(valveMap);
+    final Map<String, Valve> valveMap = initValveMap(input);
 
     return getMaxReleasablePressure(valveMap);
   }
@@ -37,15 +37,23 @@ public class Day16 {
     return -1;
   }
 
+  private static Map<String, Valve> initValveMap(Resource input) {
+    final Map<String, Valve> valveMap = new HashMap<>();
+    populateValves(input, valveMap);
+    replaceZeroFlowRateValves(valveMap);
+    return valveMap;
+  }
+
   private static int getMaxReleasablePressure(Map<String, Valve> valveMap) {
-    return getMaxPressureForRemainingTime("AA", valveMap, new HashSet<>(), new HashMap<>(), 30);
+    return getMaxPressureForRemainingTime(
+        START_VALVE_LOCATION, valveMap, new HashSet<>(), new HashMap<>(), 30);
   }
 
   // Uses DFS and caching to compute the max releasable pressure for the remaining time
   private static int getMaxPressureForRemainingTime(
-      String currentLocation,
+      String currentValveId,
       Map<String, Valve> valveMap,
-      Set<String> locationsAlreadyOpen,
+      Set<String> valvesAlreadyOpen,
       Map<String, Integer> cache,
       int minutesRemaining) {
     if (minutesRemaining < 1) {
@@ -53,37 +61,36 @@ public class Day16 {
     }
 
     // Cache check
-    final String cacheName = getCacheName(currentLocation, locationsAlreadyOpen, minutesRemaining);
+    final String cacheName = getCacheName(currentValveId, valvesAlreadyOpen, minutesRemaining);
     if (cache.get(cacheName) != null) {
       return cache.get(cacheName);
     }
 
     // DFS
-    final Valve currentValve = valveMap.get(currentLocation);
-    int thisFlowRate = currentValve.flowRate;
+    final Valve currentValve = valveMap.get(currentValveId);
     int maxFlow = 0;
     for (LinkedValveMeta linkedValve : currentValve.linkedValvesMeta) {
       int withoutOpeningCurrentValve =
           getMaxPressureForRemainingTime(
               linkedValve.id,
               valveMap,
-              locationsAlreadyOpen,
+              valvesAlreadyOpen,
               cache,
               minutesRemaining - linkedValve.minutesToGetTo);
       maxFlow = max(maxFlow, withoutOpeningCurrentValve);
 
       final boolean shouldCurrentValveBeOpened =
-          thisFlowRate > 0 && !locationsAlreadyOpen.contains(currentLocation);
+          currentValve.flowRate > 0 && !valvesAlreadyOpen.contains(currentValveId);
       if (shouldCurrentValveBeOpened) {
-        Set<String> newLocationsAlreadyOpen = new HashSet<>(locationsAlreadyOpen);
-        newLocationsAlreadyOpen.add(currentLocation);
+        Set<String> newValvesAlreadyOpen = new HashSet<>(valvesAlreadyOpen);
+        newValvesAlreadyOpen.add(currentValveId);
 
         int withOpeningCurrentValve =
-            thisFlowRate * (minutesRemaining - 1)
+            currentValve.flowRate * (minutesRemaining - 1)
                 + getMaxPressureForRemainingTime(
                     linkedValve.id,
                     valveMap,
-                    newLocationsAlreadyOpen,
+                    newValvesAlreadyOpen,
                     cache,
                     minutesRemaining - 1 - linkedValve.minutesToGetTo);
 
@@ -163,8 +170,7 @@ public class Day16 {
                   new Valve(
                       valveId,
                       flowRate,
-                      false,
-                      Arrays.stream(tunnels)
+                      stream(tunnels)
                           .map(linkedValveId -> new LinkedValveMeta(linkedValveId, 1))
                           .collect(Collectors.toSet())));
             });
@@ -172,14 +178,14 @@ public class Day16 {
 
   private static List<String> getValveIdsToRemove(Map<String, Valve> valveMap) {
     return valveMap.values().stream()
-        .filter(valve -> valve.flowRate == 0 && !"AA".equals(valve.id))
+        .filter(valve -> valve.flowRate == 0 && !START_VALVE_LOCATION.equals(valve.id))
         .map(Valve::id)
         .toList();
   }
 
   private static String getCacheName(
-      String currentLocation, Set<String> alreadyOpen, Integer minutesRemaining) {
-    StringBuilder builder = new StringBuilder().append(currentLocation);
+      String currentValveId, Set<String> alreadyOpen, Integer minutesRemaining) {
+    final StringBuilder builder = new StringBuilder().append(currentValveId);
     builder.append("/");
     for (String open : alreadyOpen) {
       builder.append(open);
