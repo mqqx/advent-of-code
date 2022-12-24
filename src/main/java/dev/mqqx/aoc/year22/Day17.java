@@ -1,182 +1,403 @@
 package dev.mqqx.aoc.year22;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static dev.mqqx.aoc.util.SplitUtils.read;
-import static java.util.stream.Collectors.toCollection;
 
-import java.awt.Point;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.IntStream;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day17 {
-  private static final long ROCKS_TO_FALL_1 = 2_022L;
+  private static final int ROCKS_TO_FALL_1 = 2_022;
   private static final long ROCKS_TO_FALL_2 = 1_000_000_000_000L;
-  private static final int CHAMBER_WIDTH = 7;
 
-  static int solvePart1(Resource input) {
-    return (int) simulateFallingRocks(input, ROCKS_TO_FALL_1);
-  }
+  private static final int HEIGHT = 10_000;
+  private static final int WIDTH = 7;
+  private static final int CACHE_NAME_LENGTH = 2_000;
 
-  static long solvePart2(Resource input) {
-    return simulateFallingRocks(input, ROCKS_TO_FALL_2);
-  }
-
-  private static long simulateFallingRocks(Resource input, long rocksToFall) {
-    final List<HashSet<Point>> rocks = initializeRocks();
-
-    // evaluate jet pattern already before using it in loop
-    final List<Boolean> jetPattern = initializeJetPattern(input);
-
-    // initialize with bottom line
-    final HashSet<Point> fallenRocks = initializeFallenRocksWithBottom();
-
-    return simulateFallingRocksWithJetPattern(rocksToFall, rocks, jetPattern, fallenRocks);
-  }
-
-  private static long simulateFallingRocksWithJetPattern(long rocksToFall, List<HashSet<Point>> rocks, List<Boolean> jetPattern, HashSet<Point> fallenRocks) {
-    //cache keeps track of seen states in the form of the top 30 rows of the state, mapped to the rock it occurred on and the max Y at the time
-    Map<Set<Point>,Point> cache = new HashMap<>();
-    long heightFromCycleRepeat = 0L;
-    int jetCounter = 0;
-    boolean cycleFound = false;
-    long rockCount = 0;
-    for (; rockCount < rocksToFall; rockCount++) {
-
-      int maxY = fallenRocks.stream().map(x -> x.y).max(Integer::compare).orElse(-1) + 4;
-
-      // offset next falling rock to starting position
-      HashSet<Point> currentRock = rocks.get((int) (rockCount % rocks.size())).stream().map(x -> new Point(x.x + 2, x.y + maxY)).collect(toCollection(HashSet::new));
-
-      while (true) {
-        currentRock = moveRockIfNotTouchingWallAlready(jetPattern, fallenRocks, jetCounter, currentRock);
-        jetCounter++;
-
-        if (hasLandedOnSomething(fallenRocks, currentRock)) {
-          if (rocksToFall == ROCKS_TO_FALL_2) {
-            int curHeight = fallenRocks.stream().map(x->x.y).max(Integer::compare).orElse(-1);
-            //create cache key for current rock state
-            final Set<Point> cacheKey = convertToCacheKey(fallenRocks);
-            if(!cycleFound && cache.containsKey(cacheKey)) {
-              //get info about cycle
-              Point info = cache.get(cacheKey);
-              int oldTime = info.x;
-              int oldHeight = info.y;
-              long cycleLength = rockCount - oldTime;
-              int cycleHeightChange = curHeight - oldHeight;
-              //calculate number of times we could cycle without going over LENGTH
-              long numCycles = (rocksToFall - rockCount) / cycleLength;
-              //add total height that we would gain from repeating cycle, and add time that cycle repeat would take
-              heightFromCycleRepeat = cycleHeightChange * numCycles;
-              rockCount += numCycles * cycleLength;
-              //mark cycle found to avoid further repeating
-              cycleFound = true;
-            } else {
-              Point info = new Point((int) rockCount, curHeight);
-              cache.put(cacheKey,info);
-            }
-          }
-
-          break;
-        }
-
-        currentRock = currentRock.stream().map(x -> new Point(x.x, x.y - 1)).collect(toCollection(HashSet::new));
-      }
+  public static int solvePart1(Resource input) {
+    final JetDirection jetDirection =
+        new JetDirection(initializeJetPattern(input), new AtomicInteger());
+    RockTower.reset(new boolean[HEIGHT][WIDTH]);
+    int y = -1;
+    for (int i = 0; i < ROCKS_TO_FALL_1; i++) {
+      y = simulateNextRock(jetDirection, y);
     }
-    return fallenRocks.stream().map(x -> x.y).max(Integer::compare).orElse(-1) + heightFromCycleRepeat + 1;
+    log.info("Height: " + (y + 1));
+    return y + 1;
   }
 
-  private static boolean hasLandedOnSomething(HashSet<Point> fallenRocks, HashSet<Point> currentRock) {
-    for (Point currentPoint : currentRock) {
-      if (fallenRocks.contains(new Point(currentPoint.x, currentPoint.y - 1))) {
-        fallenRocks.addAll(currentRock);
-        return true;
+  public static long solvePart2(Resource input) {
+    final JetDirection jetDirection =
+        new JetDirection(initializeJetPattern(input), new AtomicInteger());
+
+    boolean[][] grid = new boolean[HEIGHT][WIDTH];
+    RockTower.reset(grid);
+    int y = -1;
+    long numberOfHeightAdjusts = 0L;
+    long distanceOfHeightAdjust = 0L;
+    boolean cacheAlreadyHit = false;
+    final Map<String, HeightAndNumBricks> cache = new HashMap<>();
+
+    for (long i = 0; i < ROCKS_TO_FALL_2; ++i) {
+      String cacheCheckName = getCacheNameFromGrid(y);
+      final boolean shouldBeCached = !cacheAlreadyHit && cacheCheckName != null;
+
+      if (shouldBeCached && cache.containsKey(cacheCheckName)) {
+        cacheAlreadyHit = true;
+        final HeightAndNumBricks cachedHeightAndNumBricks = cache.get(cacheCheckName);
+        distanceOfHeightAdjust = y - cachedHeightAndNumBricks.height;
+        final long numBricksDuringPeriod = i - cachedHeightAndNumBricks.numBricks;
+        final long heightAdjust = ROCKS_TO_FALL_2 - i;
+
+        // skip i to end of last repeating cycle < ROCKS_TO_FALL_2
+        numberOfHeightAdjusts = heightAdjust / numBricksDuringPeriod;
+        i = i + (numberOfHeightAdjusts * numBricksDuringPeriod);
+      } else if (shouldBeCached) {
+        cache.put(cacheCheckName, new HeightAndNumBricks(y, i));
       }
+
+      y = simulateNextRock(jetDirection, y);
     }
-    return false;
+    long height = y + 1L;
+    height += numberOfHeightAdjusts * distanceOfHeightAdjust;
+    log.info("Height: " + height);
+    return height;
   }
 
-  private static HashSet<Point> moveRockIfNotTouchingWallAlready(List<Boolean> jetPattern, HashSet<Point> fallenRocks, int jetCounter, HashSet<Point> currentRock) {
-    if (Boolean.TRUE.equals(jetPattern.get(jetCounter % jetPattern.size()))) {
-      final int highestX = currentRock.stream().map(x -> x.x).max(Integer::compare).orElse(-1);
-      final HashSet<Point> tentativeRight = currentRock.stream().map(x -> new Point(x.x + 1, x.y)).collect(toCollection(HashSet::new));
+  private static int simulateNextRock(JetDirection jetDirection, int y) {
+    // Figure out where new rock should start
+    Rock rock = RockTower.getNextRock(y + 4);
+    int thisRocksHeight;
+    do {
+      // Simulate wind push
+      rock.move(jetDirection.next());
+      // Simulate fall
+      thisRocksHeight = rock.drop();
+    } while (thisRocksHeight == -1);
 
-      if (highestX < CHAMBER_WIDTH - 1 && notContainsAny(fallenRocks, tentativeRight)) {
-        return tentativeRight;
-      }
-    } else {
-      final int lowestX = currentRock.stream().map(x -> x.x).min(Integer::compare).orElse(-1);
-      final HashSet<Point> tentativeLeft = currentRock.stream().map(x -> new Point(x.x - 1, x.y)).collect(toCollection(HashSet::new));
-
-      if (lowestX > 0 && notContainsAny(fallenRocks, tentativeLeft)) {
-        return tentativeLeft;
-      }
+    if (thisRocksHeight > y) {
+      y = thisRocksHeight;
     }
-    return currentRock;
-  }
-
-  private static HashSet<Point> initializeFallenRocksWithBottom() {
-    return IntStream.range(0, CHAMBER_WIDTH)
-        .mapToObj(i -> new Point(i, -1))
-        .collect(toCollection(HashSet::new));
+    return y;
   }
 
   private static List<Boolean> initializeJetPattern(Resource input) {
-    return read(input)
-        .chars()
-        .mapToObj(jet -> jet == '>')
-        .toList();
+    return read(input).chars().mapToObj(jet -> jet == '<').toList();
   }
 
-  private static boolean notContainsAny(Set<Point> big, Set<Point> small) {
-    for (Point c : small) {
-      if (big.contains(c)) {
-        return false;
+  private static String getCacheNameFromGrid(int y) {
+    if (y < CACHE_NAME_LENGTH) {
+      return null;
+    }
+    StringBuilder cacheName = new StringBuilder();
+    for (int i = 0; i < CACHE_NAME_LENGTH; ++i) {
+      int value = 0;
+      for (int x = 0; x < WIDTH; ++x) {
+        value <<= 1;
+        if (RockTower.grid[y - i][x]) {
+          value += 1;
+        }
+      }
+      cacheName.append(value).append(".");
+    }
+    return cacheName.toString();
+  }
+
+  record HeightAndNumBricks(long height, long numBricks) {}
+
+  record JetDirection(List<Boolean> pattern, AtomicInteger current) {
+    boolean next() {
+      return pattern.get(current.getAndIncrement() % pattern.size());
+    }
+  }
+
+  private static class RockTower {
+    private static int nextRockId = 0;
+    private static boolean[][] grid;
+
+    private RockTower() {}
+
+    static void reset(boolean[][] newGrid) {
+      nextRockId = 0;
+      grid = newGrid;
+    }
+
+    static Rock getNextRock(int y) {
+      Rock rock =
+          switch (nextRockId) {
+            case 0 -> new HorizontalRock(grid, y);
+            case 1 -> new PlusRock(grid, y);
+            case 2 -> new ReversedLRock(grid, y);
+            case 3 -> new VerticalRock(grid, y);
+            case 4 -> new SquareRock(grid, y);
+            default -> throw new RuntimeException("getNextRock() failed");
+          };
+      nextRockId++;
+      nextRockId %= 5;
+      return rock;
+    }
+  }
+
+  private interface Rock {
+    // The rock moves itself the given direction, if possible
+    void move(boolean moveLeft);
+
+    // The rock moves itself down and returns -1
+    // Otherwise, inserts itself into grid and
+    // returns the height of its highest element.
+    int drop();
+  }
+
+  /** Rock with shape #### */
+  private static class HorizontalRock implements Rock {
+    private final boolean[][] grid;
+    private int y;
+    private int x;
+
+    HorizontalRock(boolean[][] grid, int height) {
+      this.grid = grid;
+      this.y = height;
+      this.x = 2;
+    }
+
+    @Override
+    public void move(boolean moveLeft) {
+      if (moveLeft) {
+        if (x == 0) {
+          return;
+        }
+        if (grid[y][x - 1]) {
+          return;
+        }
+        x--;
+      } else {
+        if (x == WIDTH - 4) {
+          return;
+        }
+        if (grid[y][x + 4]) {
+          return;
+        }
+        x++;
       }
     }
-    return true;
+
+    @Override
+    public int drop() {
+      if (y == 0
+          || grid[y - 1][x]
+          || grid[y - 1][x + 1]
+          || grid[y - 1][x + 2]
+          || grid[y - 1][x + 3]) {
+        grid[y][x] = true;
+        grid[y][x + 1] = true;
+        grid[y][x + 2] = true;
+        grid[y][x + 3] = true;
+        return y;
+      } else {
+        y--;
+        return -1;
+      }
+    }
   }
 
-  private static List<HashSet<Point>> initializeRocks() {
-    final List<HashSet<Point>> rocks = new ArrayList<>();
+  /** Rock with shape .#. ### .#. */
+  private static class PlusRock implements Rock {
+    private final boolean[][] grid;
+    private int y;
+    private int x;
 
-    // horizontal line
-    rocks.add(
-        IntStream.range(0, 4)
-            .mapToObj(i -> new Point(i, 0))
-            .collect(toCollection(HashSet::new)));
+    PlusRock(boolean[][] grid, int height) {
+      this.grid = grid;
+      this.y = height;
+      this.x = 2;
+    }
 
-    // plus sign
-    rocks.add(
-        newHashSet(
-            new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(1, 2), new Point(1, 0)));
+    @Override
+    public void move(boolean moveLeft) {
+      if (moveLeft) {
+        if (x == 0) {
+          return;
+        }
+        if (grid[y + 2][x] || grid[y + 1][x - 1] || grid[y][x]) {
+          return;
+        }
+        x--;
+      } else {
+        if (x == WIDTH - 3) {
+          return;
+        }
+        if (grid[y + 2][x + 2] || grid[y + 1][x + 3] || grid[y][x + 2]) {
+          return;
+        }
+        x++;
+      }
+    }
 
-    // backwards L
-    rocks.add(
-        newHashSet(
-            new Point(0, 0), new Point(1, 0), new Point(2, 0), new Point(2, 1), new Point(2, 2)));
-
-    // vertical line
-    rocks.add(
-        IntStream.range(0, 4)
-            .mapToObj(i -> new Point(0, i))
-            .collect(toCollection(HashSet::new)));
-
-    // square
-    rocks.add(newHashSet(new Point(0, 0), new Point(0, 1), new Point(1, 1), new Point(1, 0)));
-    return rocks;
+    @Override
+    public int drop() {
+      if (y == 0 || grid[y][x] || grid[y - 1][x + 1] || grid[y][x + 2]) {
+        grid[y][x + 1] = true;
+        grid[y + 1][x] = true;
+        grid[y + 1][x + 1] = true;
+        grid[y + 1][x + 2] = true;
+        grid[y + 2][x + 1] = true;
+        return y + 2;
+      } else {
+        y--;
+        return -1;
+      }
+    }
   }
 
-  public static Set<Point> convertToCacheKey(Set<Point> rocks) {
-    int maxY = rocks.stream().map(x -> x.y).max(Integer::compare).orElse(-1);
-    return rocks.stream().filter(x -> maxY - x.y <= 30).map(x -> new Point(x.x, maxY - x.y)).collect(toCollection(HashSet::new));
+  /** Rock with shape ..# ..# ### */
+  private static class ReversedLRock implements Rock {
+    private final boolean[][] grid;
+    private int y;
+    private int x;
+
+    ReversedLRock(boolean[][] grid, int height) {
+      this.grid = grid;
+      this.y = height;
+      this.x = 2;
+    }
+
+    @Override
+    public void move(boolean moveLeft) {
+      if (moveLeft) {
+        if (x == 0) {
+          return;
+        }
+        if (grid[y + 2][x + 1] || grid[y + 1][x + 1] || grid[y][x - 1]) {
+          return;
+        }
+        x--;
+      } else {
+        if (x == WIDTH - 3) {
+          return;
+        }
+        if (grid[y + 2][x + 3] || grid[y + 1][x + 3] || grid[y][x + 3]) {
+          return;
+        }
+        x++;
+      }
+    }
+
+    @Override
+    public int drop() {
+      if (y == 0 || grid[y - 1][x] || grid[y - 1][x + 1] || grid[y - 1][x + 2]) {
+        grid[y][x] = true;
+        grid[y][x + 1] = true;
+        grid[y][x + 2] = true;
+        grid[y + 1][x + 2] = true;
+        grid[y + 2][x + 2] = true;
+        return y + 2;
+      } else {
+        y--;
+        return -1;
+      }
+    }
+  }
+
+  /** Rock with shape # # # # */
+  private static class VerticalRock implements Rock {
+    private final boolean[][] grid;
+    private int y;
+    private int x;
+
+    VerticalRock(boolean[][] grid, int height) {
+      this.grid = grid;
+      this.y = height;
+      this.x = 2;
+    }
+
+    @Override
+    public void move(boolean moveLeft) {
+      if (moveLeft) {
+        if (x == 0) {
+          return;
+        }
+        if (grid[y][x - 1] || grid[y + 1][x - 1] || grid[y + 2][x - 1] || grid[y + 3][x - 1]) {
+          return;
+        }
+        x--;
+      } else {
+        if (x == WIDTH - 1) {
+          return;
+        }
+        if (grid[y][x + 1] || grid[y + 1][x + 1] || grid[y + 2][x + 1] || grid[y + 3][x + 1]) {
+          return;
+        }
+        x++;
+      }
+    }
+
+    @Override
+    public int drop() {
+      if (y == 0 || grid[y - 1][x]) {
+        grid[y][x] = true;
+        grid[y + 1][x] = true;
+        grid[y + 2][x] = true;
+        grid[y + 3][x] = true;
+        return y + 3;
+      } else {
+        y--;
+        return -1;
+      }
+    }
+  }
+
+  /** Rock with shape ## ## */
+  private static class SquareRock implements Rock {
+    private final boolean[][] grid;
+    private int y;
+    private int x;
+
+    SquareRock(boolean[][] grid, int height) {
+      this.grid = grid;
+      this.y = height;
+      this.x = 2;
+    }
+
+    @Override
+    public void move(boolean moveLeft) {
+      if (moveLeft) {
+        if (x == 0) {
+          return;
+        }
+        if (grid[y + 1][x - 1] || grid[y][x - 1]) {
+          return;
+        }
+        x--;
+      } else {
+        if (x == WIDTH - 2) {
+          return;
+        }
+        if (grid[y + 1][x + 2] || grid[y][x + 2]) {
+          return;
+        }
+        x++;
+      }
+    }
+
+    @Override
+    public int drop() {
+      if (y == 0 || grid[y - 1][x] || grid[y - 1][x + 1]) {
+        grid[y][x] = true;
+        grid[y][x + 1] = true;
+        grid[y + 1][x] = true;
+        grid[y + 1][x + 1] = true;
+        return y + 1;
+      } else {
+        y--;
+        return -1;
+      }
+    }
   }
 }
