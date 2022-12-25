@@ -23,13 +23,11 @@ public class Day2 {
   private static final String PAPER_SCISSORS = "B Z";
 
   static int calculateScore(Resource strategyGuide) {
-    List<String> games = linesList(strategyGuide);
-
-    return calculatePoints(games);
+    return calculatePoints(linesList(strategyGuide));
   }
 
   static int calculateScoreWithChangedOutcome(Resource strategyGuide) {
-    List<String> games =
+    final List<String> games =
         lines(strategyGuide)
             .map(
                 game ->

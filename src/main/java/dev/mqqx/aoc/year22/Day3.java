@@ -47,9 +47,9 @@ public class Day3 {
   }
 
   private static Integer findBadgePriority(List<String> groupOfRucksacks) {
-    String firstRucksack = groupOfRucksacks.get(0);
-    String secondRucksack = groupOfRucksacks.get(1);
-    String thirdRucksack = groupOfRucksacks.get(2);
+    final String firstRucksack = groupOfRucksacks.get(0);
+    final String secondRucksack = groupOfRucksacks.get(1);
+    final String thirdRucksack = groupOfRucksacks.get(2);
 
     return firstRucksack
         .chars()

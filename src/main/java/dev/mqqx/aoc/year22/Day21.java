@@ -27,7 +27,7 @@ public class Day21 {
 
   private static long solve(Resource input, boolean isPart2) {
     List<String> list = new ArrayList<>();
-    Long result = reduceBySolvingPossibleEquations(input, isPart2, list);
+    final Long result = reduceBySolvingPossibleEquations(input, isPart2, list);
     if (result != null) {
       return result;
     }

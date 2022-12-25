@@ -112,7 +112,7 @@ public class Day11 {
   private static LongFunction<Long> parseOperation(String operationLine) {
     final String[] opString = operationLine.substring(23).split(" ");
 
-    LongFunction<Long> operation;
+    final LongFunction<Long> operation;
 
     if ("*".equals(opString[0])) {
       operation = "old".equals(opString[1]) ? x -> x * x : x -> x * parseLong(opString[1]);

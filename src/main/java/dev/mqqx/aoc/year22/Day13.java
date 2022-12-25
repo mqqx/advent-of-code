@@ -43,8 +43,8 @@ public class Day13 {
                     })
             .toList();
 
-    int index2 = 1 + orderedSignalLists.indexOf(List.of(List.of(2L)));
-    int index6 = 1 + orderedSignalLists.indexOf(List.of(List.of(6L)));
+    final int index2 = 1 + orderedSignalLists.indexOf(List.of(List.of(2L)));
+    final int index6 = 1 + orderedSignalLists.indexOf(List.of(List.of(6L)));
     return index2 * index6;
   }
 
@@ -70,6 +70,7 @@ public class Day13 {
   private static int compareLists(List<?> left, List<?> right) {
     final boolean isLeftEmpty = left.isEmpty();
     final boolean isRightEmpty = right.isEmpty();
+
     if (isLeftEmpty && isRightEmpty) {
       return 0;
     } else if (isLeftEmpty) {

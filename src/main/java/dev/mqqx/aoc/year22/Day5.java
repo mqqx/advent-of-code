@@ -54,7 +54,7 @@ public class Day5 {
 
   private static ContainerStacks createInitialStacks(List<String> strings) {
     final List<Stack<String>> stacks = new ArrayList<>();
-    AtomicInteger commandStartIndex = new AtomicInteger(1);
+    final AtomicInteger commandStartIndex = new AtomicInteger(1);
 
     strings.stream()
         .map(
