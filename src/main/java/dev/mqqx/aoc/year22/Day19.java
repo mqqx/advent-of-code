@@ -28,13 +28,13 @@ public class Day19 {
         parseBlueprints(input, 50)
             .map(
                 blueprint -> {
-                  log.debug("Blueprint {}: Calculating quality level", blueprint.id);
+                  log.debug("Blueprint {}: Calculating quality level", blueprint.id());
                   activeBlueprint = blueprint;
                   final int mostGeodes = mostGeodes(0, 0, 0, 0, 1, 0, 0, 0, 0);
-                  final int qualityLevel = blueprint.id * mostGeodes;
+                  final int qualityLevel = blueprint.id() * mostGeodes;
                   log.debug(
                       "Blueprint {}: {} geodes found. Quality level: {}",
-                      blueprint.id,
+                      blueprint.id(),
                       mostGeodes,
                       qualityLevel);
                   return qualityLevel;
@@ -57,10 +57,10 @@ public class Day19 {
         parseBlueprints(input, 3)
             .map(
                 blueprint -> {
-                  log.debug("Blueprint {}: Finding most possible geodes", blueprint.id);
+                  log.debug("Blueprint {}: Finding most possible geodes", blueprint.id());
                   activeBlueprint = blueprint;
                   final int mostGeodes = mostGeodes(0, 0, 0, 0, 1, 0, 0, 0, 0);
-                  log.debug("Blueprint {}: {} geodes found", blueprint.id, mostGeodes);
+                  log.debug("Blueprint {}: {} geodes found", blueprint.id(), mostGeodes);
                   return mostGeodes;
                 })
             .reduce(1, (a, b) -> a * b);
@@ -75,7 +75,7 @@ public class Day19 {
 
   private static Stream<Blueprint> parseBlueprints(Resource input, int maxBlueprints) {
     return lines(input, "Blueprint")
-        .map(blueprint -> blueprint.replaceAll("[^0-9]+", "#"))
+        .map(blueprint -> blueprint.replaceAll("\\D+", "#"))
         .map(blueprint -> blueprint.split("#"))
         .map(sbp -> stream(sbp).filter(part -> !part.isEmpty()).toList())
         .filter(parts -> parts.size() > 6)
@@ -107,7 +107,7 @@ public class Day19 {
       int time) {
     mostGeodesCallCounter++;
     if (time == maxTime) {
-      activeBlueprint.maxGeodes.set(max(activeBlueprint.maxGeodes.get(), geodes));
+      activeBlueprint.maxGeodes.set(max(activeBlueprint.maxGeodes().get(), geodes));
       return geodes;
     }
 
@@ -119,7 +119,7 @@ public class Day19 {
     for (int i = 0; i < minutesLeft; i++) {
       maxGeodesPossible += geodeRobots + i;
     }
-    if (maxGeodesPossible < activeBlueprint.maxGeodes.get()) {
+    if (maxGeodesPossible < activeBlueprint.maxGeodes().get()) {
       return 0;
     }
 
@@ -142,11 +142,11 @@ public class Day19 {
     // and if we have enough clay robots, we always want to make an obsidian robot if possible
     // we almost always want to make an obsidian robot whenever possible, but there's a few edge
     // cases where one more clay robot is better
-    if (ore >= activeBlueprint.geodeCost1 && obsidian >= activeBlueprint.geodeCost2) {
+    if (ore >= activeBlueprint.geodeCost1() && obsidian >= activeBlueprint.geodeCost2()) {
       return mostGeodes(
-          newOre - activeBlueprint.geodeCost1,
+          newOre - activeBlueprint.geodeCost1(),
           newClay,
-          newObsidian - activeBlueprint.geodeCost2,
+          newObsidian - activeBlueprint.geodeCost2(),
           newGeodes,
           oreRobots,
           clayRobots,
@@ -154,13 +154,13 @@ public class Day19 {
           geodeRobots + 1,
           time + 1);
     }
-    if (clayRobots >= activeBlueprint.obsidianCost2
-        && obsidianRobots < activeBlueprint.geodeCost2
-        && ore >= activeBlueprint.obsidianCost1
-        && clay >= activeBlueprint.obsidianCost2) {
+    if (clayRobots >= activeBlueprint.obsidianCost2()
+        && obsidianRobots < activeBlueprint.geodeCost2()
+        && ore >= activeBlueprint.obsidianCost1()
+        && clay >= activeBlueprint.obsidianCost2()) {
       return mostGeodes(
-          newOre - activeBlueprint.obsidianCost1,
-          newClay - activeBlueprint.obsidianCost2,
+          newOre - activeBlueprint.obsidianCost1(),
+          newClay - activeBlueprint.obsidianCost2(),
           newObsidian,
           newGeodes,
           oreRobots,
@@ -173,15 +173,15 @@ public class Day19 {
     // for the non-guaranteed conditions, take the maximum of any
     int best = 0;
     // if not too many obsidian robots and enough to make one, make one
-    if (obsidianRobots < activeBlueprint.geodeCost2
-        && ore >= activeBlueprint.obsidianCost1
-        && clay >= activeBlueprint.obsidianCost2) {
+    if (obsidianRobots < activeBlueprint.geodeCost2()
+        && ore >= activeBlueprint.obsidianCost1()
+        && clay >= activeBlueprint.obsidianCost2()) {
       best =
           max(
               best,
               mostGeodes(
-                  newOre - activeBlueprint.obsidianCost1,
-                  newClay - activeBlueprint.obsidianCost2,
+                  newOre - activeBlueprint.obsidianCost1(),
+                  newClay - activeBlueprint.obsidianCost2(),
                   newObsidian,
                   newGeodes,
                   oreRobots,
@@ -191,12 +191,12 @@ public class Day19 {
                   time + 1));
     }
     // if not too many clay robots and enough to make one, make one
-    if (clayRobots < activeBlueprint.obsidianCost2 && ore >= activeBlueprint.clayCost) {
+    if (clayRobots < activeBlueprint.obsidianCost2() && ore >= activeBlueprint.clayCost()) {
       best =
           max(
               best,
               mostGeodes(
-                  newOre - activeBlueprint.clayCost,
+                  newOre - activeBlueprint.clayCost(),
                   newClay,
                   newObsidian,
                   newGeodes,
@@ -207,12 +207,12 @@ public class Day19 {
                   time + 1));
     }
     // if not too many ore robots and enough to make one, make one
-    if (oreRobots < 4 && ore >= activeBlueprint.oreCost) {
+    if (oreRobots < 4 && ore >= activeBlueprint.oreCost()) {
       best =
           max(
               best,
               mostGeodes(
-                  newOre - activeBlueprint.oreCost,
+                  newOre - activeBlueprint.oreCost(),
                   newClay,
                   newObsidian,
                   newGeodes,
