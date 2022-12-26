@@ -3,6 +3,7 @@ package dev.mqqx.aoc.year22;
 import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.max;
+import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 
@@ -79,7 +80,7 @@ public class Day16 {
     final Valve currentValve = valveMap.get(currentLocation.valveId);
     int maxFlow = 0;
     for (Entry<String, Integer> linkedValve : currentValve.linkedValves.entrySet()) {
-      int withoutOpeningCurrentValve =
+      final int withoutOpeningCurrentValve =
           maxReleasablePressureForRemainingTimeOf(
               new CurrentLocation(
                   linkedValve.getKey(), currentLocation.remainingMinutes - linkedValve.getValue()),
@@ -91,10 +92,10 @@ public class Day16 {
       final boolean shouldCurrentValveBeOpened =
           currentValve.flowRate > 0 && !valvesAlreadyOpen.contains(currentLocation.valveId);
       if (shouldCurrentValveBeOpened) {
-        Set<String> newValvesAlreadyOpen = new HashSet<>(valvesAlreadyOpen);
+        final Set<String> newValvesAlreadyOpen = new HashSet<>(valvesAlreadyOpen);
         newValvesAlreadyOpen.add(currentLocation.valveId);
 
-        int withOpeningCurrentValve =
+        final int withOpeningCurrentValve =
             currentValve.flowRate * (currentLocation.remainingMinutes - 1)
                 + maxReleasablePressureForRemainingTimeOf(
                     new CurrentLocation(
@@ -118,14 +119,13 @@ public class Day16 {
     addOrReplaceLinkedValves(valveMap, valvesToLink, false);
 
     final CurrentLocation startLocation = new CurrentLocation(START_VALVE_LOCATION, 26);
-    final Map<String, PathsAndMaxFlow> cache = new HashMap<>();
-
     final AtomicInteger counter = new AtomicInteger(0);
 
     final PathsAndMaxFlow pathsAndMaxFlow =
         maxReleasablePressureForRemainingTimeOfPair(
-            startLocation, startLocation, valveMap, new TreeSet<>(), cache, counter);
-    log.debug("Tested " + counter.get() + " paths");
+            startLocation, startLocation, valveMap, new TreeSet<>(), new HashMap<>(), counter);
+
+    log.warn("Tested {} paths", format("%,d", counter.get()));
     return pathsAndMaxFlow;
   }
 
@@ -150,14 +150,15 @@ public class Day16 {
       return pathsAndMaxFlow;
     }
 
-    String cacheName = getCacheNameForPair(person, elephant, valvesAlreadyOpen);
+    final String cacheName = getCacheNameForPair(person, elephant, valvesAlreadyOpen);
     if (cache.get(cacheName) != null) {
       return cache.get(cacheName);
     }
     // DFS on important points
-    // Iterate through all of the valves for me
-    for (Valve nextValve : remainingValves) {
-      int timeRemainingAtNextValve =
+    // Iterate through all the valves for me
+    for (int i = remainingValves.size() - 1; i >= 0; i--) {
+      final Valve nextValve = remainingValves.get(i);
+      final int timeRemainingAtNextValve =
           person.remainingMinutes - nextValve.linkedValves.get(person.valveId) - 1;
       if (timeRemainingAtNextValve > 0) {
         final Set<String> remainingOpenValves = new TreeSet<>(valvesAlreadyOpen);
@@ -183,9 +184,11 @@ public class Day16 {
         }
       }
     }
-    // Iterate through all of the valves for the elephant
-    for (Valve nextValve : remainingValves) {
-      int timeRemainingAtNextValve =
+
+    // Iterate through all the valves for the elephant
+    for (int i = 0; i < remainingValves.size(); i++) {
+      final Valve nextValve = remainingValves.get(i);
+      final int timeRemainingAtNextValve =
           elephant.remainingMinutes - nextValve.linkedValves.get(elephant.valveId) - 1;
       if (timeRemainingAtNextValve > 0) {
         final Set<String> newValvesAlreadyOpen = new TreeSet<>(valvesAlreadyOpen);
