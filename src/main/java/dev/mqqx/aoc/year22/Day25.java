@@ -27,10 +27,9 @@ public class Day25 {
     for (int i = chars.length - 1; i >= 0; i--) {
       final int currentChar =
           switch (chars[i]) {
-            case '0', '1', '2' -> getNumericValue(chars[i]);
             case '-' -> -1;
             case '=' -> -2;
-            default -> throw new IllegalStateException("Unexpected value: " + chars[i]);
+            default -> getNumericValue(chars[i]);
           };
 
       sum += pow(SNAFU_BASE, exponent++) * currentChar;
