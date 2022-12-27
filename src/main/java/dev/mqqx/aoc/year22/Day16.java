@@ -7,6 +7,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -121,11 +122,14 @@ public class Day16 {
     final CurrentLocation startLocation = new CurrentLocation(START_VALVE_LOCATION, 26);
     final AtomicInteger counter = new AtomicInteger(0);
 
+    final List<Valve> valvesToCheck =
+        valveMap.values().stream().filter(valve -> !START_VALVE_LOCATION.equals(valve.id)).toList();
+
     final PathsAndMaxFlow pathsAndMaxFlow =
         maxReleasablePressureForRemainingTimeOfPair(
-            startLocation, startLocation, valveMap, new TreeSet<>(), new HashMap<>(), counter);
+            startLocation, startLocation, valvesToCheck, new TreeSet<>(), new HashMap<>(), counter);
 
-    log.warn("Tested {} paths", format("%,d", counter.get()));
+    log.debug("Tested {} paths", format("%,d", counter.get()));
     return pathsAndMaxFlow;
   }
 
@@ -133,47 +137,95 @@ public class Day16 {
   private static PathsAndMaxFlow maxReleasablePressureForRemainingTimeOfPair(
       CurrentLocation person,
       CurrentLocation elephant,
-      Map<String, Valve> valveMap,
+      List<Valve> remainingValves,
       Set<String> valvesAlreadyOpen,
       Map<String, PathsAndMaxFlow> cache,
       AtomicInteger counter) {
-    counter.getAndIncrement();
     PathsAndMaxFlow pathsAndMaxFlow = new PathsAndMaxFlow("", "", 0);
-    final List<Valve> remainingValves =
-        valveMap.values().stream()
-            .filter(valve -> !START_VALVE_LOCATION.equals(valve.id))
-            .filter(valve -> !valvesAlreadyOpen.contains(valve.id))
-            .toList();
 
     if (remainingValves.isEmpty()
         || (person.remainingMinutes < 1 && elephant.remainingMinutes < 1)) {
       return pathsAndMaxFlow;
     }
 
-    final String cacheName = getCacheNameForPair(person, elephant, valvesAlreadyOpen);
+    String cacheName = getCacheNameForPair(elephant, person, valvesAlreadyOpen);
     if (cache.get(cacheName) != null) {
       return cache.get(cacheName);
     }
-    // DFS on important points
-    // Iterate through all the valves for me
+
+    cacheName = getCacheNameForPair(person, elephant, valvesAlreadyOpen);
+    if (cache.get(cacheName) != null) {
+      return cache.get(cacheName);
+    }
+
+    pathsAndMaxFlow =
+        iterateThroughValves(
+            person,
+            elephant,
+            remainingValves,
+            valvesAlreadyOpen,
+            cache,
+            counter,
+            pathsAndMaxFlow,
+            false);
+    pathsAndMaxFlow =
+        iterateThroughValves(
+            person,
+            elephant,
+            remainingValves,
+            valvesAlreadyOpen,
+            cache,
+            counter,
+            pathsAndMaxFlow,
+            true);
+
+    cache.put(cacheName, pathsAndMaxFlow);
+    counter.getAndIncrement();
+    return pathsAndMaxFlow;
+  }
+
+  private static PathsAndMaxFlow iterateThroughValves(
+      CurrentLocation person,
+      CurrentLocation elephant,
+      List<Valve> remainingValves,
+      Set<String> valvesAlreadyOpen,
+      Map<String, PathsAndMaxFlow> cache,
+      AtomicInteger counter,
+      PathsAndMaxFlow pathsAndMaxFlow,
+      boolean isElephant) {
+    // DFS on remaining valves
     for (int i = remainingValves.size() - 1; i >= 0; i--) {
       final Valve nextValve = remainingValves.get(i);
+      if (valvesAlreadyOpen.contains(nextValve.id)) {
+        continue;
+      }
+
       final int timeRemainingAtNextValve =
-          person.remainingMinutes - nextValve.linkedValves.get(person.valveId) - 1;
+          isElephant
+              ? elephant.remainingMinutes - nextValve.linkedValves.get(elephant.valveId) - 1
+              : person.remainingMinutes - nextValve.linkedValves.get(person.valveId) - 1;
+      final CurrentLocation newPerson =
+          isElephant ? person : new CurrentLocation(nextValve.id, timeRemainingAtNextValve);
+      final CurrentLocation newElephant =
+          isElephant ? new CurrentLocation(nextValve.id, timeRemainingAtNextValve) : elephant;
+
       if (timeRemainingAtNextValve > 0) {
-        final Set<String> remainingOpenValves = new TreeSet<>(valvesAlreadyOpen);
-        remainingOpenValves.add(nextValve.id);
+        final Set<String> newValvesAlreadyOpen = new TreeSet<>(valvesAlreadyOpen);
+        newValvesAlreadyOpen.add(nextValve.id);
+        final List<Valve> newValvesRemaining = new ArrayList<>(remainingValves);
+        newValvesRemaining.remove(nextValve);
         PathsAndMaxFlow thisFlow =
             maxReleasablePressureForRemainingTimeOfPair(
-                new CurrentLocation(nextValve.id, timeRemainingAtNextValve),
-                elephant,
-                valveMap,
-                remainingOpenValves,
-                cache,
-                counter);
+                newPerson, newElephant, newValvesRemaining, newValvesAlreadyOpen, cache, counter);
         thisFlow = thisFlow.copy();
         thisFlow.maxFlow += timeRemainingAtNextValve * nextValve.flowRate;
-        thisFlow.personPath = nextValve.id + thisFlow.personPath;
+
+        if (isElephant) {
+          thisFlow.elephantPath = nextValve.id + thisFlow.elephantPath;
+        } else {
+          thisFlow.personPath = nextValve.id + thisFlow.personPath;
+        }
+
         if (thisFlow.maxFlow > pathsAndMaxFlow.maxFlow) {
           if (person.remainingMinutes == 26 && elephant.remainingMinutes == 26) {
             log.debug("Candidate maxFlow computed: " + thisFlow.maxFlow);
@@ -184,38 +236,6 @@ public class Day16 {
         }
       }
     }
-
-    // Iterate through all the valves for the elephant
-    for (int i = 0; i < remainingValves.size(); i++) {
-      final Valve nextValve = remainingValves.get(i);
-      final int timeRemainingAtNextValve =
-          elephant.remainingMinutes - nextValve.linkedValves.get(elephant.valveId) - 1;
-      if (timeRemainingAtNextValve > 0) {
-        final Set<String> newValvesAlreadyOpen = new TreeSet<>(valvesAlreadyOpen);
-        newValvesAlreadyOpen.add(nextValve.id);
-        PathsAndMaxFlow thisFlow =
-            maxReleasablePressureForRemainingTimeOfPair(
-                person,
-                new CurrentLocation(nextValve.id, timeRemainingAtNextValve),
-                valveMap,
-                newValvesAlreadyOpen,
-                cache,
-                counter);
-        thisFlow = thisFlow.copy();
-        thisFlow.maxFlow += timeRemainingAtNextValve * nextValve.flowRate;
-        thisFlow.elephantPath = nextValve.id + thisFlow.elephantPath;
-        if (thisFlow.maxFlow > pathsAndMaxFlow.maxFlow) {
-          if (person.remainingMinutes == 26 && elephant.remainingMinutes == 26) {
-            log.debug("Elephant - Candidate maxFlow computed: " + thisFlow.maxFlow);
-            log.debug("Elephant - Candidate personPath: " + thisFlow.personPath);
-            log.debug("Elephant - Candidate elephantPath: " + thisFlow.elephantPath);
-          }
-          pathsAndMaxFlow = thisFlow;
-        }
-      }
-    }
-
-    cache.put(cacheName, pathsAndMaxFlow);
     return pathsAndMaxFlow;
   }
 
@@ -289,7 +309,7 @@ public class Day16 {
               final String valveId = valve[0].substring(valve[0].length() - 2);
               final int flowRate = parseInt(valve[1]);
               final String[] tunnels =
-                  splitLine[1].split("tunnel[s]? lead[s]? to valve[s]? ")[1].split(", ");
+                  splitLine[1].split("tunnels? leads? to valves? ")[1].split(", ");
 
               valveMap.put(
                   valveId,
@@ -330,16 +350,22 @@ public class Day16 {
 
   private static String getCacheNameForPair(
       CurrentLocation person, CurrentLocation elephant, Set<String> openedValves) {
+    final StringBuilder cacheNameBuilder =
+        new StringBuilder()
+            .append(person.valveId())
+            .append("/")
+            .append(elephant.valveId())
+            .append("/");
 
-    StringBuilder builder =
-        new StringBuilder().append(person.valveId).append("/").append(elephant.valveId).append("/");
     for (String open : openedValves) {
-      builder.append(open);
+      cacheNameBuilder.append(open);
     }
-    builder.append("/");
-    builder.append(person.remainingMinutes);
-    builder.append("/");
-    builder.append(elephant.remainingMinutes);
-    return builder.toString();
+
+    cacheNameBuilder.append("/");
+    cacheNameBuilder.append(person.remainingMinutes());
+    cacheNameBuilder.append("/");
+    cacheNameBuilder.append(elephant.remainingMinutes());
+
+    return cacheNameBuilder.toString();
   }
 }
