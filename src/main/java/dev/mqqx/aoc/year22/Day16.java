@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -41,7 +40,7 @@ public class Day16 {
   static int solvePart2(Resource input) {
     final Map<String, Valve> valveMap = initValveMap(input);
 
-    final PathsAndMaxFlow maxReleasablePressure = maxReleasablePressureOfPair(valveMap);
+    final PathsMaxFlow maxReleasablePressure = maxReleasablePressureOfPair(valveMap);
     log.info("Max pressure released: {}", maxReleasablePressure.maxFlow);
     log.info("PersonPath: {}{}", START_VALVE_LOCATION, maxReleasablePressure.personPath);
     log.info("ElephantPath: {}{}", START_VALVE_LOCATION, maxReleasablePressure.elephantPath);
@@ -114,34 +113,33 @@ public class Day16 {
     return maxFlow;
   }
 
-  private static PathsAndMaxFlow maxReleasablePressureOfPair(Map<String, Valve> valveMap) {
+  private static PathsMaxFlow maxReleasablePressureOfPair(Map<String, Valve> valveMap) {
     final List<String> valvesToLink = valveMap.values().stream().map(Valve::id).toList();
 
     addOrReplaceLinkedValves(valveMap, valvesToLink, false);
 
     final CurrentLocation startLocation = new CurrentLocation(START_VALVE_LOCATION, 26);
-    final AtomicInteger counter = new AtomicInteger(0);
 
     final List<Valve> valvesToCheck =
         valveMap.values().stream().filter(valve -> !START_VALVE_LOCATION.equals(valve.id)).toList();
 
-    final PathsAndMaxFlow pathsAndMaxFlow =
+    final HashMap<String, PathsMaxFlow> cache = new HashMap<>();
+    final PathsMaxFlow pathsAndMaxFlow =
         maxReleasablePressureForRemainingTimeOfPair(
-            startLocation, startLocation, valvesToCheck, new TreeSet<>(), new HashMap<>(), counter);
+            startLocation, startLocation, valvesToCheck, new TreeSet<>(), cache);
 
-    log.debug("Tested {} paths", format("%,d", counter.get()));
+    log.debug("Cached {} paths", format("%,d", cache.size()));
     return pathsAndMaxFlow;
   }
 
   // Uses DFS and caching to compute the max releasable pressure for the remaining time
-  private static PathsAndMaxFlow maxReleasablePressureForRemainingTimeOfPair(
+  private static PathsMaxFlow maxReleasablePressureForRemainingTimeOfPair(
       CurrentLocation person,
       CurrentLocation elephant,
       List<Valve> remainingValves,
       Set<String> valvesAlreadyOpen,
-      Map<String, PathsAndMaxFlow> cache,
-      AtomicInteger counter) {
-    PathsAndMaxFlow pathsAndMaxFlow = new PathsAndMaxFlow("", "", 0);
+      Map<String, PathsMaxFlow> cache) {
+    PathsMaxFlow pathsAndMaxFlow = new PathsMaxFlow("", "", 0);
 
     if (remainingValves.isEmpty()
         || (person.remainingMinutes < 1 && elephant.remainingMinutes < 1)) {
@@ -153,6 +151,7 @@ public class Day16 {
       return cache.get(cacheName);
     }
 
+    // skip paths where person and elephant valves as well as remaining minutes are switched
     cacheName = getCacheNameForPair(person, elephant, valvesAlreadyOpen);
     if (cache.get(cacheName) != null) {
       return cache.get(cacheName);
@@ -160,83 +159,67 @@ public class Day16 {
 
     pathsAndMaxFlow =
         iterateThroughValves(
-            person,
-            elephant,
-            remainingValves,
-            valvesAlreadyOpen,
-            cache,
-            counter,
-            pathsAndMaxFlow,
-            false);
+            person, elephant, remainingValves, valvesAlreadyOpen, cache, pathsAndMaxFlow, false);
     pathsAndMaxFlow =
         iterateThroughValves(
-            person,
-            elephant,
-            remainingValves,
-            valvesAlreadyOpen,
-            cache,
-            counter,
-            pathsAndMaxFlow,
-            true);
+            person, elephant, remainingValves, valvesAlreadyOpen, cache, pathsAndMaxFlow, true);
 
     cache.put(cacheName, pathsAndMaxFlow);
-    counter.getAndIncrement();
     return pathsAndMaxFlow;
   }
 
-  private static PathsAndMaxFlow iterateThroughValves(
+  private static PathsMaxFlow iterateThroughValves(
       CurrentLocation person,
       CurrentLocation elephant,
       List<Valve> remainingValves,
       Set<String> valvesAlreadyOpen,
-      Map<String, PathsAndMaxFlow> cache,
-      AtomicInteger counter,
-      PathsAndMaxFlow pathsAndMaxFlow,
+      Map<String, PathsMaxFlow> cache,
+      PathsMaxFlow currentFlow,
       boolean isElephant) {
     // DFS on remaining valves
     for (int i = remainingValves.size() - 1; i >= 0; i--) {
       final Valve nextValve = remainingValves.get(i);
-      if (valvesAlreadyOpen.contains(nextValve.id)) {
+      if (valvesAlreadyOpen.contains(nextValve.id())) {
         continue;
       }
 
       final int timeRemainingAtNextValve =
           isElephant
-              ? elephant.remainingMinutes - nextValve.linkedValves.get(elephant.valveId) - 1
-              : person.remainingMinutes - nextValve.linkedValves.get(person.valveId) - 1;
+              ? elephant.remainingMinutes() - nextValve.linkedValves().get(elephant.valveId()) - 1
+              : person.remainingMinutes() - nextValve.linkedValves().get(person.valveId()) - 1;
       final CurrentLocation newPerson =
-          isElephant ? person : new CurrentLocation(nextValve.id, timeRemainingAtNextValve);
+          isElephant ? person : new CurrentLocation(nextValve.id(), timeRemainingAtNextValve);
       final CurrentLocation newElephant =
-          isElephant ? new CurrentLocation(nextValve.id, timeRemainingAtNextValve) : elephant;
+          isElephant ? new CurrentLocation(nextValve.id(), timeRemainingAtNextValve) : elephant;
 
       if (timeRemainingAtNextValve > 0) {
         final Set<String> newValvesAlreadyOpen = new TreeSet<>(valvesAlreadyOpen);
-        newValvesAlreadyOpen.add(nextValve.id);
+        newValvesAlreadyOpen.add(nextValve.id());
         final List<Valve> newValvesRemaining = new ArrayList<>(remainingValves);
         newValvesRemaining.remove(nextValve);
-        PathsAndMaxFlow thisFlow =
+        PathsMaxFlow nextFlow =
             maxReleasablePressureForRemainingTimeOfPair(
-                newPerson, newElephant, newValvesRemaining, newValvesAlreadyOpen, cache, counter);
-        thisFlow = thisFlow.copy();
-        thisFlow.maxFlow += timeRemainingAtNextValve * nextValve.flowRate;
+                newPerson, newElephant, newValvesRemaining, newValvesAlreadyOpen, cache);
+        nextFlow = nextFlow.copy();
+        nextFlow.maxFlow += timeRemainingAtNextValve * nextValve.flowRate();
 
         if (isElephant) {
-          thisFlow.elephantPath = nextValve.id + thisFlow.elephantPath;
+          nextFlow.elephantPath = nextValve.id() + nextFlow.elephantPath;
         } else {
-          thisFlow.personPath = nextValve.id + thisFlow.personPath;
+          nextFlow.personPath = nextValve.id() + nextFlow.personPath;
         }
 
-        if (thisFlow.maxFlow > pathsAndMaxFlow.maxFlow) {
-          if (person.remainingMinutes == 26 && elephant.remainingMinutes == 26) {
-            log.debug("Candidate maxFlow computed: " + thisFlow.maxFlow);
-            log.debug("Candidate personPath: " + thisFlow.personPath);
-            log.debug("Candidate elephantPath: " + thisFlow.elephantPath);
+        if (nextFlow.maxFlow > currentFlow.maxFlow) {
+          if (person.remainingMinutes() == 26 && elephant.remainingMinutes() == 26) {
+            log.debug("Candidate maxFlow computed: " + nextFlow.maxFlow);
+            log.debug("Candidate personPath: " + nextFlow.personPath);
+            log.debug("Candidate elephantPath: " + nextFlow.elephantPath);
           }
-          pathsAndMaxFlow = thisFlow;
+          currentFlow = nextFlow;
         }
       }
     }
-    return pathsAndMaxFlow;
+    return currentFlow;
   }
 
   private static void replaceZeroFlowRateValves(Map<String, Valve> valveMap) {
@@ -338,13 +321,13 @@ public class Day16 {
   }
 
   @AllArgsConstructor
-  private static class PathsAndMaxFlow {
+  private static class PathsMaxFlow {
     String personPath;
     String elephantPath;
     int maxFlow;
 
-    PathsAndMaxFlow copy() {
-      return new PathsAndMaxFlow(personPath, elephantPath, maxFlow);
+    PathsMaxFlow copy() {
+      return new PathsMaxFlow(personPath, elephantPath, maxFlow);
     }
   }
 
