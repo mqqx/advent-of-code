@@ -137,7 +137,8 @@ public class Day17 {
             case 2 -> new ReversedLRock(grid, y);
             case 3 -> new VerticalRock(grid, y);
             case 4 -> new SquareRock(grid, y);
-            default -> throw new RuntimeException("getNextRock() failed");
+            default -> throw new IllegalArgumentException(
+                "Cannot recognize rock id: " + nextRockId);
           };
       nextRockId++;
       nextRockId %= 5;
