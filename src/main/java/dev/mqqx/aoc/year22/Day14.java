@@ -10,8 +10,10 @@ import java.awt.Point;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day14 {
 
@@ -43,42 +45,47 @@ public class Day14 {
       Point lastPoint,
       Point startingPoint,
       boolean isPart2) {
-    for (int i = currentPoint.y; i < waterfallGrid.length; i++) {
-
-      final String currentValue = waterfallGrid[i][currentPoint.x];
+    for (int y = currentPoint.y; y < waterfallGrid.length; y++) {
+      final String currentValue = waterfallGrid[y][currentPoint.x];
 
       if (" ".equals(currentValue)) {
-        lastPoint = new Point(currentPoint.x, i);
+        lastPoint = new Point(currentPoint.x, y);
       } else {
-        boolean isOverflowing =
-            currentPoint.x - 1 < 0 || currentPoint.x + 1 > waterfallGrid[0].length - 1;
-
-        boolean isLeftBlocked =
-            currentPoint.x - 1 < 0 || !" ".equals(waterfallGrid[i][currentPoint.x - 1]);
-        boolean isRightBlocked =
-            currentPoint.x + 1 > waterfallGrid[0].length - 1
-                || !" ".equals(waterfallGrid[i][currentPoint.x + 1]);
-
-        if (isLeftBlocked && isRightBlocked) {
-          if (isOverflowing) {
-            return false;
-          } else if (isPart2 && lastPoint.equals(startingPoint)) {
-            waterfallGrid[lastPoint.y][lastPoint.x] = "o";
-            return false;
-          }
-
-          waterfallGrid[lastPoint.y][lastPoint.x] = "o";
-          return true;
-        } else if (!isLeftBlocked) {
-          return dropOneSand(
-              waterfallGrid, new Point(currentPoint.x - 1, i), lastPoint, startingPoint, isPart2);
-        } else {
-          return dropOneSand(
-              waterfallGrid, new Point(currentPoint.x + 1, i), lastPoint, startingPoint, isPart2);
-        }
+        return dropOneSandIfNotOverflowing(
+            waterfallGrid, currentPoint, lastPoint, startingPoint, isPart2, y);
       }
     }
     return false;
+  }
+
+  private static boolean dropOneSandIfNotOverflowing(
+      String[][] waterfallGrid,
+      Point currentPoint,
+      Point lastPoint,
+      Point startingPoint,
+      boolean isPart2,
+      int y) {
+    boolean isOverflowing =
+        currentPoint.x - 1 < 0 || currentPoint.x + 1 > waterfallGrid[0].length - 1;
+
+    boolean isLeftBlocked =
+        currentPoint.x - 1 < 0 || !" ".equals(waterfallGrid[y][currentPoint.x - 1]);
+    boolean isRightBlocked =
+        currentPoint.x + 1 > waterfallGrid[0].length - 1
+            || !" ".equals(waterfallGrid[y][currentPoint.x + 1]);
+
+    if (isLeftBlocked && isRightBlocked) {
+      if (!isOverflowing) {
+        waterfallGrid[lastPoint.y][lastPoint.x] = "o";
+      }
+
+      return !(isOverflowing || isPart2 && lastPoint.equals(startingPoint));
+    }
+
+    // check point to the left, if its blocked, check point to the right
+    final int x = isLeftBlocked ? currentPoint.x + 1 : currentPoint.x - 1;
+
+    return dropOneSand(waterfallGrid, new Point(x, y), lastPoint, startingPoint, isPart2);
   }
 
   private static void drawRocks(
@@ -167,13 +174,14 @@ public class Day14 {
   }
 
   private static void printBoard(String[][] waterfallGrid) {
+    final StringBuilder board = new StringBuilder();
     for (String[] strings : waterfallGrid) {
       for (String string : strings) {
-        System.out.print(string);
+        board.append(string);
       }
-      System.out.println();
+      board.append(System.lineSeparator());
     }
-    System.out.println();
+    log.debug(board.toString());
   }
 
   static int solvePart2(Resource input) {
