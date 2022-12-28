@@ -1,6 +1,7 @@
 package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.SplitUtils.linesList;
+import static java.lang.Character.isDigit;
 import static java.lang.Integer.parseInt;
 
 import java.util.Comparator;
@@ -54,13 +55,13 @@ public class Day7 {
 
   private static Map<String, Directory> readFileSystem(List<String> commands) {
     final Map<String, Directory> fileSystem = new HashMap<>();
-    Directory lastDirectory = null;
     boolean isLS = false;
     String currentPath = "";
+    Directory lastDirectory = null;
 
     for (String command : commands) {
-      if ("$ cd ..".equals(command) && lastDirectory.parent != null) {
-        lastDirectory = fileSystem.get(lastDirectory.parent);
+      if ("$ cd ..".equals(command) && lastDirectory != null && lastDirectory.parent() != null) {
+        lastDirectory = fileSystem.get(lastDirectory.parent());
         currentPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
       } else if ("$ ls".equals(command)) {
         isLS = true;
@@ -74,23 +75,33 @@ public class Day7 {
         } else {
           // set full path as directory name as there are many directories with the same name
           currentPath += "/" + folderName;
-          Directory currentDirectory = fileSystem.get(folderName);
-
-          // only create directory if it does not exist yet
-          if (currentDirectory == null) {
-            currentDirectory =
-                new Directory(currentPath, new HashSet<>(), new HashSet<>(), lastDirectory.name);
-            lastDirectory.subDirectories.add(currentDirectory);
-            fileSystem.put(currentPath, currentDirectory);
-          }
-          lastDirectory = currentDirectory;
+          lastDirectory =
+              getOrCreateCurrentDirectory(fileSystem, lastDirectory, currentPath, folderName);
         }
-      } else if (isLS && Character.isDigit(command.charAt(0))) {
+      } else if (isLS && isDigit(command.charAt(0)) && lastDirectory != null) {
         final String[] commandParts = command.split(" ");
 
-        lastDirectory.files.add(new File(commandParts[1], parseInt(commandParts[0])));
+        lastDirectory.files().add(new File(commandParts[1], parseInt(commandParts[0])));
       }
     }
     return fileSystem;
+  }
+
+  private static Directory getOrCreateCurrentDirectory(
+      Map<String, Directory> fileSystem,
+      Directory lastDirectory,
+      String currentPath,
+      String folderName) {
+    Directory currentDirectory = fileSystem.get(folderName);
+
+    // only create directory if it does not exist yet
+    if (currentDirectory == null) {
+      currentDirectory =
+          new Directory(currentPath, new HashSet<>(), new HashSet<>(), lastDirectory.name());
+      lastDirectory.subDirectories().add(currentDirectory);
+      fileSystem.put(currentPath, currentDirectory);
+    }
+    lastDirectory = currentDirectory;
+    return lastDirectory;
   }
 }
