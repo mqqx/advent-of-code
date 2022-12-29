@@ -2,6 +2,7 @@ package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.SplitUtils.linesList;
 import static java.lang.Integer.parseInt;
+import static java.lang.String.valueOf;
 
 import dev.mqqx.aoc.util.Point;
 import java.util.HashSet;
@@ -18,17 +19,17 @@ import org.springframework.core.io.Resource;
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day9 {
 
-  record HeadTail(Knot head, Knot tail) {}
+  record Chain(Link head, Link tail) {}
 
   @Data
   @AllArgsConstructor
   @FieldDefaults(level = AccessLevel.PRIVATE)
-  static class Knot {
+  static class Link {
     Point pos;
     String id;
 
-    Knot head;
-    Knot tail;
+    Link head;
+    Link tail;
 
     public void moveRight() {
       moveHead(() -> head.pos = head.pos.right());
@@ -66,10 +67,10 @@ public class Day9 {
 
     private void moveWithFocus(
         BooleanSupplier hasGapGreaterThanOne, Runnable updateIndexWithGap, Runnable move) {
-      if (isHeadTailWithoutKnotsInBetween() && hasGapGreaterThanOne.getAsBoolean()) {
+      if (isChainWithoutLinksInBetween() && hasGapGreaterThanOne.getAsBoolean()) {
         updateIndexWithGap.run();
       } else {
-        updateIndexMultipleKnots(move);
+        updateIndexMultipleLinks(move);
       }
     }
 
@@ -81,11 +82,11 @@ public class Day9 {
       pos = new Point(head.pos.x(), (pos.y() + head.pos.y()) / 2);
     }
 
-    private boolean isHeadTailWithoutKnotsInBetween() {
+    private boolean isChainWithoutLinksInBetween() {
       return tail == null && "H".equals(head.id);
     }
 
-    private void updateIndexMultipleKnots(Runnable move) {
+    private void updateIndexMultipleLinks(Runnable move) {
       if (hasYGapGreaterThanOne() && hasXGapGreaterThanOne()) {
         pos = new Point((pos.x() + head.pos.x()) / 2, (pos.y() + head.pos.y()) / 2);
       } else if (hasXGapGreaterThanOne()) {
@@ -109,17 +110,17 @@ public class Day9 {
   }
 
   static int solvePart1(Resource input) {
-    return moveRope(input, 0);
+    return moveRope(input, 1);
   }
 
   static int solvePart2(Resource input) {
-    return moveRope(input, 8);
+    return moveRope(input, 9);
   }
 
-  private static int moveRope(Resource input, int knotsInBetween) {
-    final HeadTail headTail = createHeadTail(knotsInBetween);
-    final Knot head = headTail.head;
-    final Knot tail = headTail.tail;
+  private static int moveRope(Resource input, int additionalLinks) {
+    final Chain chain = createChain(additionalLinks);
+    final Link head = chain.head;
+    final Link tail = chain.tail;
 
     final HashSet<Point> visitedPositions = new HashSet<>();
     visitedPositions.add(tail.pos);
@@ -133,7 +134,7 @@ public class Day9 {
     return visitedPositions.size();
   }
 
-  private static Runnable getMoveDirection(Knot head, String directionToMove) {
+  private static Runnable getMoveDirection(Link head, String directionToMove) {
     return switch (directionToMove) {
       case "R" -> head.getTail()::moveRight;
       case "U" -> head.getTail()::moveUp;
@@ -147,7 +148,7 @@ public class Day9 {
   }
 
   private static void move(
-      Runnable moveDirection, Knot tail, HashSet<Point> visitedPositions, int stepsToMove) {
+      Runnable moveDirection, Link tail, HashSet<Point> visitedPositions, int stepsToMove) {
     if (moveDirection == null) {
       return;
     }
@@ -159,34 +160,23 @@ public class Day9 {
     }
   }
 
-  private static HeadTail createHeadTail(int knotsInBetween) {
-    final Knot head = new Knot(new Point(), "H", null, null);
-    final Knot tail = new Knot(new Point(), "9", null, null);
+  private static Chain createChain(int additionalLinks) {
+    final Link head = new Link(new Point(), "H", null, null);
 
-    if (knotsInBetween > 0) {
-      Knot lastKnot = null;
-      for (int i = 0; i < knotsInBetween; i++) {
-        final Knot knot = new Knot(new Point(), String.valueOf(i + 1), lastKnot, null);
+    Link lastLink = null;
+    for (int i = 0; i < additionalLinks; i++) {
+      final Link link = new Link(new Point(), valueOf(i + 1), lastLink, null);
 
-        if (i == 0) {
-          head.setTail(knot);
-          knot.setHead(head);
-        }
-        if (lastKnot != null) {
-          lastKnot.setTail(knot);
-        }
-        lastKnot = knot;
-
-        if (i + 1 == knotsInBetween) {
-          knot.setTail(tail);
-          tail.setHead(lastKnot);
-        }
+      if (i == 0) {
+        head.setTail(link);
+        link.setHead(head);
       }
-    } else {
-      head.setTail(tail);
-      tail.setHead(head);
+      if (lastLink != null) {
+        lastLink.setTail(link);
+      }
+      lastLink = link;
     }
 
-    return new HeadTail(head, tail);
+    return new Chain(head, lastLink);
   }
 }
