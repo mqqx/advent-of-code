@@ -3,7 +3,7 @@ package dev.mqqx.aoc.year22;
 import static dev.mqqx.aoc.util.SplitUtils.linesList;
 import static java.lang.Math.min;
 
-import java.awt.Point;
+import dev.mqqx.aoc.util.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -73,7 +73,7 @@ public class Day12 {
   }
 
   private static Character getCurrentChar(Character[][] map, Point cur) {
-    Character currentChar = map[cur.y][cur.x];
+    Character currentChar = map[cur.y()][cur.x()];
     if (currentChar == 'S') {
       currentChar = 'a' - 1;
     } else if (currentChar == 'E') {
@@ -84,24 +84,37 @@ public class Day12 {
 
   private static List<Elevation> getSurroundingElevations(
       Character[][] map, Point currentPosition) {
-    final Character currentChar = map[currentPosition.y][currentPosition.x];
+    final Character currentChar = map[currentPosition.y()][currentPosition.x()];
     final List<Elevation> elevations = new ArrayList<>();
 
-    addElevationIfIsAtMostOneHigher(
-        map, currentPosition.y, currentPosition.x - 1, elevations, currentChar);
-    addElevationIfIsAtMostOneHigher(
-        map, currentPosition.y - 1, currentPosition.x, elevations, currentChar);
-    addElevationIfIsAtMostOneHigher(
-        map, currentPosition.y + 1, currentPosition.x, elevations, currentChar);
-    addElevationIfIsAtMostOneHigher(
-        map, currentPosition.y, currentPosition.x + 1, elevations, currentChar);
+    currentPosition
+        .surrounding()
+        .forEach(
+            positionToCheck ->
+                addElevationIfIsAtMostOneHigher(map, positionToCheck, elevations, currentChar));
+
+    //    addElevationIfIsAtMostOneHigher(
+    //        map, currentPosition.left(), elevations, currentChar);
+    //    addElevationIfIsAtMostOneHigher(
+    //        map, currentPosition.down(), elevations, currentChar);
+    //    addElevationIfIsAtMostOneHigher(
+    //        map, currentPosition.up(), elevations, currentChar);
+    //    addElevationIfIsAtMostOneHigher(
+    //        map, currentPosition.right(), elevations, currentChar);
     return elevations;
   }
 
   private static void addElevationIfIsAtMostOneHigher(
-      Character[][] map, int y, int x, List<Elevation> elevations, Character currentChar) {
-    if (y > -1 && y < map.length && x < map[0].length && x > -1) {
-      Character surroundingChar = map[y][x];
+      Character[][] map, Point nextPoint, List<Elevation> elevations, Character currentChar) {
+
+    // TODO move logic with grid and point to grid class ?
+    final boolean isNextPointInMapBounds =
+        nextPoint.y() > -1
+            && nextPoint.y() < map.length
+            && nextPoint.x() < map[0].length
+            && nextPoint.x() > -1;
+    if (isNextPointInMapBounds) {
+      Character surroundingChar = map[nextPoint.y()][nextPoint.x()];
 
       if (currentChar == 'S') {
         currentChar = 'a';
@@ -110,9 +123,8 @@ public class Day12 {
         surroundingChar = 'z';
       }
 
-      final Point newCoordinates = new Point(x, y);
       if (surroundingChar <= currentChar + 1) {
-        elevations.add(new Elevation(newCoordinates, surroundingChar));
+        elevations.add(new Elevation(nextPoint, surroundingChar));
       }
     }
   }

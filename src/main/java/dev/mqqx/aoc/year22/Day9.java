@@ -3,7 +3,7 @@ package dev.mqqx.aoc.year22;
 import static dev.mqqx.aoc.util.SplitUtils.linesList;
 import static java.lang.Integer.parseInt;
 
-import java.awt.Point;
+import dev.mqqx.aoc.util.Point;
 import java.util.HashSet;
 import java.util.function.BooleanSupplier;
 import lombok.AccessLevel;
@@ -31,22 +31,22 @@ public class Day9 {
     Knot tail;
 
     public void moveRight() {
-      moveHead(() -> head.pos.x++);
+      moveHead(() -> head.pos = head.pos.right());
       moveWithXFocus(tail != null ? tail::moveRight : null);
     }
 
     public void moveUp() {
-      moveHead(() -> head.pos.y++);
+      moveHead(() -> head.pos = head.pos.up());
       moveWithYFocus(tail != null ? tail::moveUp : null);
     }
 
     public void moveLeft() {
-      moveHead(() -> head.pos.x--);
+      moveHead(() -> head.pos = head.pos.left());
       moveWithXFocus(tail != null ? tail::moveLeft : null);
     }
 
     public void moveDown() {
-      moveHead(() -> head.pos.y--);
+      moveHead(() -> head.pos = head.pos.down());
       moveWithYFocus(tail != null ? tail::moveDown : null);
     }
 
@@ -74,11 +74,11 @@ public class Day9 {
     }
 
     private void updateIndexWithXGapAndY() {
-      pos.setLocation((pos.x + head.pos.x) / 2, head.pos.y);
+      pos = new Point((pos.x() + head.pos.x()) / 2, head.pos.y());
     }
 
     private void updateIndexWithYGapAndX() {
-      pos.setLocation(head.pos.x, (pos.y + head.pos.y) / 2);
+      pos = new Point(head.pos.x(), (pos.y() + head.pos.y()) / 2);
     }
 
     private boolean isHeadTailWithoutKnotsInBetween() {
@@ -87,7 +87,7 @@ public class Day9 {
 
     private void updateIndexMultipleKnots(Runnable move) {
       if (hasYGapGreaterThanOne() && hasXGapGreaterThanOne()) {
-        pos.setLocation((pos.x + head.pos.x) / 2, (pos.y + head.pos.y) / 2);
+        pos = new Point((pos.x() + head.pos.x()) / 2, (pos.y() + head.pos.y()) / 2);
       } else if (hasXGapGreaterThanOne()) {
         updateIndexWithXGapAndY();
       } else if (hasYGapGreaterThanOne()) {
@@ -100,11 +100,11 @@ public class Day9 {
     }
 
     private boolean hasYGapGreaterThanOne() {
-      return Math.abs(head.pos.y - pos.y) > 1;
+      return pos.hasYGapGreaterThan(head.pos.y(), 1);
     }
 
     private boolean hasXGapGreaterThanOne() {
-      return Math.abs(head.pos.x - pos.x) > 1;
+      return pos.hasXGapGreaterThan(head.pos.x(), 1);
     }
   }
 
@@ -155,7 +155,7 @@ public class Day9 {
     while (stepsToMove > 0) {
       stepsToMove--;
       moveDirection.run();
-      visitedPositions.add(new Point(tail.pos.x, tail.pos.y));
+      visitedPositions.add(tail.pos.copy());
     }
   }
 

@@ -2,11 +2,10 @@ package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static java.lang.Integer.parseInt;
-import static java.lang.Math.abs;
 import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
 
-import java.awt.Point;
+import dev.mqqx.aoc.util.Point;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -45,11 +44,11 @@ public class Day14 {
       Point lastPoint,
       Point startingPoint,
       boolean isPart2) {
-    for (int y = currentPoint.y; y < waterfallGrid.length; y++) {
-      final String currentValue = waterfallGrid[y][currentPoint.x];
+    for (int y = currentPoint.y(); y < waterfallGrid.length; y++) {
+      final String currentValue = waterfallGrid[y][currentPoint.x()];
 
       if (" ".equals(currentValue)) {
-        lastPoint = new Point(currentPoint.x, y);
+        lastPoint = new Point(currentPoint.x(), y);
       } else {
         return dropOneSandIfNotOverflowing(
             waterfallGrid, currentPoint, lastPoint, startingPoint, isPart2, y);
@@ -66,24 +65,24 @@ public class Day14 {
       boolean isPart2,
       int y) {
     boolean isOverflowing =
-        currentPoint.x - 1 < 0 || currentPoint.x + 1 > waterfallGrid[0].length - 1;
+        currentPoint.x() - 1 < 0 || currentPoint.x() + 1 > waterfallGrid[0].length - 1;
 
     boolean isLeftBlocked =
-        currentPoint.x - 1 < 0 || !" ".equals(waterfallGrid[y][currentPoint.x - 1]);
+        currentPoint.x() - 1 < 0 || !" ".equals(waterfallGrid[y][currentPoint.x() - 1]);
     boolean isRightBlocked =
-        currentPoint.x + 1 > waterfallGrid[0].length - 1
-            || !" ".equals(waterfallGrid[y][currentPoint.x + 1]);
+        currentPoint.x() + 1 > waterfallGrid[0].length - 1
+            || !" ".equals(waterfallGrid[y][currentPoint.x() + 1]);
 
     if (isLeftBlocked && isRightBlocked) {
       if (!isOverflowing) {
-        waterfallGrid[lastPoint.y][lastPoint.x] = "o";
+        waterfallGrid[lastPoint.y()][lastPoint.x()] = "o";
       }
 
       return !(isOverflowing || isPart2 && lastPoint.equals(startingPoint));
     }
 
     // check point to the left, if its blocked, check point to the right
-    final int x = isLeftBlocked ? currentPoint.x + 1 : currentPoint.x - 1;
+    final int x = isLeftBlocked ? currentPoint.x() + 1 : currentPoint.x() - 1;
 
     return dropOneSand(waterfallGrid, new Point(x, y), lastPoint, startingPoint, isPart2);
   }
@@ -97,7 +96,8 @@ public class Day14 {
           Point lastPoint = null;
           for (final Point currentPoint : rock) {
             if (lastPoint == null) {
-              waterfallGrid[currentPoint.y][extension + currentPoint.x - waterfall[0].leftEdge] =
+              waterfallGrid[currentPoint.y()][
+                      extension + currentPoint.x() - waterfall[0].leftEdge] =
                   "#";
             } else {
               drawX(waterfall, waterfallGrid, extension, lastPoint, currentPoint);
@@ -121,11 +121,11 @@ public class Day14 {
       int extension,
       Point lastPoint,
       Point currentPoint) {
-    final int yGap = abs(currentPoint.y - lastPoint.y);
+    final int yGap = currentPoint.yGap(lastPoint.y());
     for (int j = 0; j < yGap + 1; j++) {
-      final int yTo = lastPoint.y + j;
-      final int yToMark = currentPoint.y - lastPoint.y < 0 ? yTo - yGap : yTo;
-      waterfallGrid[yToMark][extension + currentPoint.x - waterfall[0].leftEdge] = "#";
+      final int yTo = lastPoint.y() + j;
+      final int yToMark = currentPoint.y() - lastPoint.y() < 0 ? yTo - yGap : yTo;
+      waterfallGrid[yToMark][extension + currentPoint.x() - waterfall[0].leftEdge] = "#";
     }
   }
 
@@ -135,11 +135,11 @@ public class Day14 {
       int extension,
       Point lastPoint,
       Point currentPoint) {
-    final int xGap = abs(currentPoint.x - lastPoint.x);
+    final int xGap = currentPoint.xGap(lastPoint.x());
     for (int j = 0; j < xGap; j++) {
-      final int xTo = lastPoint.x - waterfall[0].leftEdge + j;
-      final int xToMark = currentPoint.x - lastPoint.x < 0 ? xTo - xGap : xTo;
-      waterfallGrid[currentPoint.y][extension + xToMark] = "#";
+      final int xTo = lastPoint.x() - waterfall[0].leftEdge + j;
+      final int xToMark = currentPoint.x() - lastPoint.x() < 0 ? xTo - xGap : xTo;
+      waterfallGrid[currentPoint.y()][extension + xToMark] = "#";
     }
   }
 

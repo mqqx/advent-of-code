@@ -4,10 +4,9 @@ import static com.google.common.collect.ImmutableRangeSet.unionOf;
 import static com.google.common.collect.Range.open;
 import static dev.mqqx.aoc.util.SplitUtils.lines;
 import static java.lang.Integer.parseInt;
-import static java.lang.Math.abs;
 
 import com.google.common.collect.Range;
-import java.awt.Point;
+import dev.mqqx.aoc.util.Point;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,21 +22,21 @@ public class Day15 {
 
   record SensorBeacon(Point sensor, Point beacon, int manDist) {
     boolean inRangeOfSensor(int x, int y) {
-      return manDist >= abs(sensor.x - x) + abs(sensor.y - y);
+      return manDist >= sensor.manDist(new Point(x, y));
     }
 
-    Range<Integer> intersectionOn(int yCoordinate) {
-      if (sensor.y < yCoordinate) {
-        if (sensor.y + manDist < yCoordinate) {
+    Range<Integer> intersectionOn(int y) {
+      if (sensor.y() < y) {
+        if (sensor.y() + manDist < y) {
           return null;
         }
       } else {
-        if (sensor.y - manDist > yCoordinate) {
+        if (sensor.y() - manDist > y) {
           return null;
         }
       }
-      int remainingDist = manDist - abs(sensor.y - yCoordinate);
-      return open(sensor.x - remainingDist - 1, sensor.x + remainingDist + 1);
+      int remainingDist = manDist - sensor.yGap(y);
+      return open(sensor.x() - remainingDist - 1, sensor.x() + remainingDist + 1);
     }
   }
 
@@ -82,20 +81,19 @@ public class Day15 {
     return -1;
   }
 
-  private static int calculateBlockedPositions(int yToCheck, List<SensorBeacon> sensorBeacons) {
+  private static int calculateBlockedPositions(int y, List<SensorBeacon> sensorBeacons) {
     final Set<Integer> blockedX = new HashSet<>();
 
     for (SensorBeacon sensorBeacon : sensorBeacons) {
-      final int yGap = abs(yToCheck - sensorBeacon.sensor.y);
+      final int yGap = sensorBeacon.sensor.yGap(y);
       if (yGap <= sensorBeacon.manDist) {
-        final int xMin = sensorBeacon.sensor.x - sensorBeacon.manDist + yGap;
-        final int xMax = sensorBeacon.sensor.x + sensorBeacon.manDist - yGap;
+        final int xMin = sensorBeacon.sensor.x() - sensorBeacon.manDist + yGap;
+        final int xMax = sensorBeacon.sensor.x() + sensorBeacon.manDist - yGap;
 
         for (int x = xMin; x <= xMax; x++) {
-          final int manDistToX = abs(x - sensorBeacon.sensor.x) + yGap;
+          final int manDistToX = sensorBeacon.sensor.xGap(x) + yGap;
 
-          if (manDistToX <= sensorBeacon.manDist
-              && !sensorBeacon.beacon.equals(new Point(x, yToCheck))) {
+          if (manDistToX <= sensorBeacon.manDist && !sensorBeacon.beacon.equals(new Point(x, y))) {
             blockedX.add(x);
           }
         }
@@ -113,10 +111,7 @@ public class Day15 {
               final Point sensorPoint = getSensorPoint(splitLine[0]);
               final Point beaconPoint = getSensorPoint(splitLine[1]);
 
-              return new SensorBeacon(
-                  sensorPoint,
-                  beaconPoint,
-                  abs(sensorPoint.x - beaconPoint.x) + abs(sensorPoint.y - beaconPoint.y));
+              return new SensorBeacon(sensorPoint, beaconPoint, sensorPoint.manDist(beaconPoint));
             })
         .toList();
   }
