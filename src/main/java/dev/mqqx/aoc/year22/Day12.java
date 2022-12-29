@@ -88,19 +88,10 @@ public class Day12 {
     final List<Elevation> elevations = new ArrayList<>();
 
     currentPosition
-        .surrounding()
+        .connecting()
         .forEach(
             positionToCheck ->
                 addElevationIfIsAtMostOneHigher(map, positionToCheck, elevations, currentChar));
-
-    //    addElevationIfIsAtMostOneHigher(
-    //        map, currentPosition.left(), elevations, currentChar);
-    //    addElevationIfIsAtMostOneHigher(
-    //        map, currentPosition.down(), elevations, currentChar);
-    //    addElevationIfIsAtMostOneHigher(
-    //        map, currentPosition.up(), elevations, currentChar);
-    //    addElevationIfIsAtMostOneHigher(
-    //        map, currentPosition.right(), elevations, currentChar);
     return elevations;
   }
 

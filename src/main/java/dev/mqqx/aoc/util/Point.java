@@ -1,7 +1,9 @@
 package dev.mqqx.aoc.util;
 
 import static java.lang.Math.abs;
+import static org.springframework.util.CollectionUtils.containsAny;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 // TODO add comparable
@@ -79,11 +81,51 @@ public record Point(int x, int y) {
     return new Point(x, y - n);
   }
 
+  public Point upLeft() {
+    return new Point(x - 1, y + 1);
+  }
+
+  public Point upRight() {
+    return new Point(x + 1, y + 1);
+  }
+
+  public Point downRight() {
+    return new Point(x + 1, y - 1);
+  }
+
+  public Point downLeft() {
+    return new Point(x - 1, y - 1);
+  }
+
   public Point copy() {
     return new Point(x, y);
   }
 
-  public Stream<Point> surrounding() {
+  public Point downIfNotSurrounded(List<Point> points) {
+    return containsAny(points, List.of(downLeft(), down(), downRight())) ? null : down();
+  }
+
+  public Point upIfNotSurrounded(List<Point> points) {
+    return containsAny(points, List.of(upLeft(), up(), upRight())) ? null : up();
+  }
+
+  public Point leftIfNotSurrounded(List<Point> points) {
+    return containsAny(points, List.of(upLeft(), left(), downLeft())) ? null : left();
+  }
+
+  public Point rightIfNotSurrounded(List<Point> points) {
+    return containsAny(points, List.of(upRight(), right(), downRight())) ? null : right();
+  }
+
+  public Stream<Point> connecting() {
     return Stream.of(left(), up(), right(), down());
+  }
+
+  public Stream<Point> surrounding() {
+    return Stream.of(left(), upLeft(), up(), upRight(), right(), downRight(), down(), downLeft());
+  }
+
+  public boolean hasSurroundingIn(List<Point> points) {
+    return containsAny(points, surrounding().toList());
   }
 }
