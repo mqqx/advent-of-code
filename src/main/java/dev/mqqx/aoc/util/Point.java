@@ -1,9 +1,14 @@
 package dev.mqqx.aoc.util;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.util.stream.IntStream.rangeClosed;
 import static org.springframework.util.CollectionUtils.containsAny;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 // TODO add comparable
@@ -99,6 +104,69 @@ public record Point(int x, int y) {
 
   public Point copy() {
     return new Point(x, y);
+  }
+
+  public Set<Point> horizontalPointsBetween(Point p) {
+    final Set<Point> points = new HashSet<>();
+    if (y == p.y()) {
+      int xMin = min(x, p.x());
+      int xMax = max(x, p.x());
+      rangeClosed(xMin, xMax).mapToObj(i -> new Point(i, y)).forEach(points::add);
+    }
+    return points;
+  }
+
+  public Set<Point> verticalPointsBetween(Point p) {
+    final Set<Point> points = new HashSet<>();
+    if (x == p.x()) {
+      int yMin = min(y, p.y());
+      int yMax = max(y, p.y());
+      rangeClosed(yMin, yMax).mapToObj(i -> new Point(x, i)).forEach(points::add);
+    }
+    return points;
+  }
+
+  public Set<Point> diagonalPointsBetween(Point p) {
+    final Set<Point> points = new HashSet<>();
+
+    if (xGap(p.x()) == yGap(p.y())) {
+      int xMin = min(x, p.x());
+      int xMax = max(x, p.x());
+      int yMin = min(y, p.y());
+      int yMax = max(y, p.y());
+
+      int slope = slope(p);
+
+      if (slope == 1) {
+        // add all points between x/y min to max x/y max
+        for (int x = xMin, y = yMin; x <= xMax && y <= yMax; x++, y++) {
+          points.add(new Point(x, y));
+        }
+      } else {
+        // if the slope is negative we need to add all points between x min/y max to x max/y min
+        for (int x = xMin, y = yMax; x <= xMax && y >= yMin; x++, y--) {
+          points.add(new Point(x, y));
+        }
+      }
+    }
+    return points;
+  }
+
+  public int slope(Point p) {
+    return x > p.x() && y > p.y() || x < p.x() && y < p.y() ? 1 : -1;
+  }
+
+  public Set<Point> inBetweenHorizontalOrVertical(Point p) {
+    final Set<Point> points = horizontalPointsBetween(p);
+    points.addAll(verticalPointsBetween(p));
+    return points;
+  }
+
+  public Set<Point> inBetweenHorizontalOrVerticalOrDiagonal(Point p) {
+    final Set<Point> points = horizontalPointsBetween(p);
+    points.addAll(verticalPointsBetween(p));
+    points.addAll(diagonalPointsBetween(p));
+    return points;
   }
 
   public Point downIfNotSurrounded(List<Point> points) {
