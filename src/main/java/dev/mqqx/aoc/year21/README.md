@@ -31,6 +31,11 @@ At first, I just used an `AtomicLong` for each fish and counted them separately,
 Therefor I migrated to an `AtomicLongMap` (Guava) with the day as the key and the count of fish on that day as value. This works by using `getAndAdd` to either just increase the existing counter or put a new one in the temporary map.
 
 ## Day 7
+
+Start at median and increase/decrease possible height until minimum fuel does not get any lower.
+
+Use same logic for part 2 with added `sumToN` call, to count for the increased fuel cost the further the crab needs to move.
+
 ## Day 8
 ## Day 9
 ## Day 10
