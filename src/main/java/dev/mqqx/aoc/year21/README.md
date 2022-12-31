@@ -43,6 +43,9 @@ For part 1 I removed the left side of the text of the `|` sign and used the rege
 As for part 2 one needs to recognize all numbers, so they can be summed up. Therefor I came up with some unique constrains regarding the length and already found numbers. As each number-string will exactly once on the left side, already mapped numbers can be removed from the set of numbers to parse.
 
 ## Day 9
+
+Parse the height map into a 2d-array and check all numbers if they are surrounded by higher ones. If that's the case then add it (+ an additional 1) to the sum.
+
 ## Day 10
 ## Day 11
 ## Day 12
