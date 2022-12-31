@@ -37,6 +37,11 @@ Start at median and increase/decrease possible height until minimum fuel does no
 Use same logic for part 2 with added `sumToN` call, to count for the increased fuel cost the further the crab needs to move.
 
 ## Day 8
+
+For part 1 I removed the left side of the text of the `|` sign and used the regex `\b(?:[a-z]{2,4}|[a-z]{7})\b` to count all strings where the output had a length of 2, 3, 4 or 7 which represents the numbers 1, 4, 7 and 8.
+
+As for part 2 one needs to recognize all numbers, so they can be summed up. Therefor I came up with some unique constrains regarding the length and already found numbers. As each number-string will exactly once on the left side, already mapped numbers can be removed from the set of numbers to parse.
+
 ## Day 9
 ## Day 10
 ## Day 11
