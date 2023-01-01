@@ -46,6 +46,9 @@ As for part 2 one needs to recognize all numbers, so they can be summed up. Ther
 
 Parse the height map into a 2d-array and check all numbers if they are surrounded by higher ones. If that's the case then add it (+ an additional 1) to the sum.
 
+For the 2nd part check connected top and left basins and optionally merge them together.
+Count the saved basins in a `AtomicLongMap` and multiply the three largest basis counts.
+
 ## Day 10
 ## Day 11
 ## Day 12
