@@ -1,5 +1,6 @@
 package dev.mqqx.aoc.year21;
 
+import static dev.mqqx.aoc.util.SplitUtils.toGrid;
 import static java.util.Comparator.reverseOrder;
 
 import com.google.common.util.concurrent.AtomicLongMap;
@@ -13,7 +14,7 @@ import org.springframework.core.io.Resource;
 public class Day9 {
 
   static int solvePart1(Resource input) {
-    final int[][] heightMap = initHeightMap(input);
+    final int[][] heightMap = toGrid(input);
 
     return sumOfLowPoints(heightMap);
   }
@@ -100,21 +101,6 @@ public class Day9 {
         }
       }
     }
-  }
-
-  private static int[][] initHeightMap(Resource input) {
-    final List<String> heights = SplitUtils.linesList(input);
-
-    final int[][] heightMap = new int[heights.get(0).length()][heights.size()];
-
-    for (int y = 0; y < heights.size(); y++) {
-      String string = heights.get(y);
-      char[] charArray = string.toCharArray();
-      for (int x = 0; x < charArray.length; x++) {
-        heightMap[x][y] = charArray[x] - '0';
-      }
-    }
-    return heightMap;
   }
 
   private static HeightBasin[][] initHeightMapWithBasin(Resource input) {

@@ -18,20 +18,17 @@ public class SplitUtils {
 
   @SneakyThrows
   public static Stream<String> lines(Resource stringResource, String regex) {
-    return stream(new String(stringResource.getInputStream().readAllBytes()).split(regex));
+    return stream(read(stringResource).split(regex));
   }
 
   @SneakyThrows
   public static Stream<Integer> linesToInt(Resource stringResource) {
-    return new String(stringResource.getInputStream().readAllBytes()).lines().map(Integer::valueOf);
+    return read(stringResource).lines().map(Integer::valueOf);
   }
 
   @SneakyThrows
   public static List<Integer> linesToIntList(Resource stringResource) {
-    return new String(stringResource.getInputStream().readAllBytes())
-        .lines()
-        .map(Integer::valueOf)
-        .toList();
+    return read(stringResource).lines().map(Integer::valueOf).toList();
   }
 
   /**
@@ -42,7 +39,7 @@ public class SplitUtils {
    */
   @SneakyThrows
   public static Stream<String> lines(Resource stringResource) {
-    return new String(stringResource.getInputStream().readAllBytes()).lines();
+    return read(stringResource).lines();
   }
 
   /**
@@ -53,11 +50,25 @@ public class SplitUtils {
    */
   @SneakyThrows
   public static List<String> linesList(Resource stringResource) {
-    return new String(stringResource.getInputStream().readAllBytes()).lines().toList();
+    return read(stringResource).lines().toList();
   }
 
   @SneakyThrows
   public static List<String> linesList(Resource stringResource, String regex) {
-    return stream(new String(stringResource.getInputStream().readAllBytes()).split(regex)).toList();
+    return stream(read(stringResource).split(regex)).toList();
+  }
+
+  public static int[][] toGrid(Resource stringResource) {
+    final List<String> lines = linesList(stringResource);
+    final int[][] grid = new int[lines.size()][lines.get(0).length()];
+
+    for (int y = 0; y < grid.length; y++) {
+      final String line = lines.get(y);
+      for (int x = 0; x < grid[0].length; x++) {
+        grid[y][x] = line.charAt(x) - '0';
+      }
+    }
+
+    return grid;
   }
 }
