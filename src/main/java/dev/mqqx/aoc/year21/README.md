@@ -56,6 +56,11 @@ For the 1st part scan all lines for syntax errors by keeping track of the openin
 For the 2nd part filter the lines with syntax errors out and take all characters of unclosed chunks to calculate the auto complete score in reversed order as they are saved in the deque.
 
 ## Day 11
+
+Each step repeat looping over energy levels as long as there are new flashes found. Use `Integer.MIN_VALUE` to mark already flashed energy levels, before they get reset eventually in `reset` method.
+
+Part two will just use `1_000` instead of `100` steps and return before when all energy levels flashed at once. Could be changed to a `while` loop with boolean, but for the provided data it's enough.
+
 ## Day 12
 ## Day 13
 ## Day 14
