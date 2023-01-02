@@ -5,6 +5,7 @@ import static java.lang.Integer.parseInt;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
+import dev.mqqx.aoc.util.UnexpectedValueException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,8 +65,7 @@ public class Day8 {
                       // parses 0, 6 and 9
                     case 6 -> number = parseLength6(intToString, numberToParse, number);
                     case 7 -> number = 8;
-                    default -> throw new IllegalStateException(
-                        "Unexpected value: " + numberToParse);
+                    default -> throw new UnexpectedValueException(numbersToParse);
                   }
 
                   if (number > -1) {

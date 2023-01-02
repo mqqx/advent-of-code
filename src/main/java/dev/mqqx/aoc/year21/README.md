@@ -50,6 +50,11 @@ For the 2nd part check connected top and left basins and optionally merge them t
 Count the saved basins in a `AtomicLongMap` and multiply the three largest basis counts.
 
 ## Day 10
+
+For the 1st part scan all lines for syntax errors by keeping track of the opening character of all unclosed chunks in a deque and return the specified error points if there is an illegal character detected. Otherwise, just return 0 to avoid additional filtering of unfinished chunks.
+
+For the 2nd part filter the lines with syntax errors out and take all characters of unclosed chunks to calculate the auto complete score in reversed order as they are saved in the deque.
+
 ## Day 11
 ## Day 12
 ## Day 13

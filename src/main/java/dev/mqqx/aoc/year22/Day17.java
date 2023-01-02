@@ -2,6 +2,7 @@ package dev.mqqx.aoc.year22;
 
 import static dev.mqqx.aoc.util.SplitUtils.read;
 
+import dev.mqqx.aoc.util.UnexpectedValueException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,8 +138,7 @@ public class Day17 {
             case 2 -> new ReversedLRock(grid, y);
             case 3 -> new VerticalRock(grid, y);
             case 4 -> new SquareRock(grid, y);
-            default -> throw new IllegalArgumentException(
-                "Cannot recognize rock id: " + nextRockId);
+            default -> throw new UnexpectedValueException(nextRockId);
           };
       nextRockId++;
       nextRockId %= 5;
