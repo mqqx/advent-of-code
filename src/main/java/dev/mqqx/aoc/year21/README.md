@@ -62,6 +62,9 @@ Each step repeat looping over energy levels as long as there are new flashes fou
 Part two will just use `1_000` instead of `100` steps and return before when all energy levels flashed at once. Could be changed to a `while` loop with boolean, but for the provided data it's enough.
 
 ## Day 12
+
+Part 1 uses backtracking as well as filtering out unreachable nodes already before traversing.
+
 ## Day 13
 ## Day 14
 ## Day 15
