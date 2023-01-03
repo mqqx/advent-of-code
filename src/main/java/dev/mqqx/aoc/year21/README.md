@@ -65,6 +65,9 @@ Part two will just use `1_000` instead of `100` steps and return before when all
 
 Part 1 uses backtracking as well as filtering out unreachable nodes already before traversing.
 
+Part 2 adds the condition, that one of the small caves can be visited two times. Therefor we cannot remove unreachable nodes, because they can be reached now.
+Besides that the small cave visits are counted in an `AtomicLongMap` which will be used to check the added condition.
+
 ## Day 13
 ## Day 14
 ## Day 15

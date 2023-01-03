@@ -61,6 +61,6 @@ class Day12Test {
   void testSolvePart2() {
     final Resource resource = new ClassPathResource("year21/day12/12");
 
-    assertThat(Day12.solvePart2(resource)).isEqualTo(157);
+    assertThat(Day12.solvePart2(resource)).isEqualTo(99_138);
   }
 }

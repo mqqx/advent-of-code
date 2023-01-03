@@ -3,37 +3,44 @@ package dev.mqqx.aoc.year21;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static dev.mqqx.aoc.util.SplitUtils.lines;
+import static java.util.Collections.frequency;
 
+import com.google.common.util.concurrent.AtomicLongMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
 
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day12 {
-
   private static final String START_CAVE = "start";
   private static final String END_CAVE = "end";
+  private static boolean isPart1 = false;
 
   static int solvePart1(Resource input) {
+    isPart1 = true;
     final Map<String, Set<String>> caveMap = initCaveMap(input);
     final List<List<String>> validPaths = newArrayList();
 
-    walkCaves(caveMap, START_CAVE, newArrayList(), validPaths);
+    walkCaves(caveMap, START_CAVE, newArrayList(), validPaths, AtomicLongMap.create());
 
     return validPaths.size();
   }
 
   static int solvePart2(Resource input) {
-    final Stream<String> strings = lines(input);
+    isPart1 = false;
+    final Map<String, Set<String>> caveMap = initCaveMap(input);
+    final List<List<String>> validPaths = newArrayList();
 
-    return 157;
+    // do the same with the exception that the first lowercase cave can be visited twice
+    walkCaves(caveMap, START_CAVE, newArrayList(), validPaths, AtomicLongMap.create());
+
+    return validPaths.size();
   }
 
   private static Map<String, Set<String>> initCaveMap(Resource input) {
@@ -47,7 +54,9 @@ public class Day12 {
               addConnectedCaves(caveMap, splitCaves[1], splitCaves[0]);
             });
 
-    filterCavesWhichCanNeverBeReached(caveMap);
+    if (isPart1) {
+      filterCavesWhichCanNeverBeReached(caveMap);
+    }
     return caveMap;
   }
 
@@ -55,9 +64,15 @@ public class Day12 {
       Map<String, Set<String>> caveMap,
       String current,
       List<String> passedCaves,
-      List<List<String>> validPaths) {
+      List<List<String>> validPaths,
+      AtomicLongMap<String> smallCaveVisits) {
     // add the current cave to the path
     passedCaves.add(current);
+    final boolean isCurrentLowerCase = current.toLowerCase().equals(current);
+
+    if (!isPart1 && isCurrentLowerCase) {
+      smallCaveVisits.getAndIncrement(current);
+    }
 
     // if the current cave is the end cave, add the path to list of valid paths
     if (END_CAVE.equals(current)) {
@@ -66,15 +81,33 @@ public class Day12 {
       // recursive case: for each connected cave of the current one,
       // find all paths from the connected cave to the end cave
       for (String next : caveMap.get(current)) {
-        // check if the next cave should only be visited once
-        if (!next.toLowerCase().equals(next) || !passedCaves.contains(next)) {
-          walkCaves(caveMap, next, passedCaves, validPaths);
+        if (checkIfShouldWalkToNextCave(passedCaves, smallCaveVisits, next)) {
+          walkCaves(caveMap, next, passedCaves, validPaths, smallCaveVisits);
         }
       }
     }
 
     // remove the current cave from the path before returning
     passedCaves.remove(current);
+    if (!isPart1 && isCurrentLowerCase) {
+      smallCaveVisits.getAndDecrement(current);
+    }
+  }
+
+  private static boolean checkIfShouldWalkToNextCave(
+      List<String> passedCaves, AtomicLongMap<String> smallCaveVisits, String next) {
+    // check if the next cave should only be visited once
+    final boolean isLowerCase = next.toLowerCase().equals(next);
+
+    if (isPart1) {
+      final boolean hasBeenVisited = passedCaves.contains(next);
+      return !isLowerCase || !hasBeenVisited;
+    } else {
+      final boolean hasVisitedAtMostOneSmallCaveTwice =
+          frequency(smallCaveVisits.asMap().values(), 2L) < 2;
+      final boolean wasNotVisitedTwiceYet = smallCaveVisits.get(next) < 2L;
+      return !isLowerCase || (hasVisitedAtMostOneSmallCaveTwice && wasNotVisitedTwiceYet);
+    }
   }
 
   private static void filterCavesWhichCanNeverBeReached(Map<String, Set<String>> caveMap) {
