@@ -58,6 +58,13 @@ public class SplitUtils {
     return stream(read(stringResource).split(regex)).toList();
   }
 
+  public static Stream<Point> toPoints(Resource input) {
+    return lines(input)
+        .map(line -> line.split(","))
+        .filter(splitLine -> splitLine.length == 2)
+        .map(Point::new);
+  }
+
   public static int[][] toGrid(Resource stringResource) {
     final List<String> lines = linesList(stringResource);
     final int[][] grid = new int[lines.size()][lines.get(0).length()];

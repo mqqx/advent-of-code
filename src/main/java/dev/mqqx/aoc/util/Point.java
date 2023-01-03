@@ -1,5 +1,6 @@
 package dev.mqqx.aoc.util;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -16,6 +17,18 @@ import java.util.stream.Stream;
 public record Point(int x, int y) {
   public Point() {
     this(0, 0);
+  }
+
+  public Point(String[] points) {
+    this(parseInt(points[0]), parseInt(points[1]));
+  }
+
+  public boolean hasPositiveXAndY() {
+    return !hasNegativeXOrY();
+  }
+
+  public boolean hasNegativeXOrY() {
+    return x < 0 || y < 0;
   }
 
   public boolean hasYGapGreaterThanOne(int yToCompare) {
@@ -44,6 +57,14 @@ public record Point(int x, int y) {
 
   public int manDist(Point toMeasure) {
     return yGap(toMeasure.y()) + xGap(toMeasure.x());
+  }
+
+  public Point foldAtX(int foldAt) {
+    return new Point(x < foldAt ? x : foldAt - xGap(foldAt), y);
+  }
+
+  public Point foldAtY(int foldAt) {
+    return new Point(x, y < foldAt ? y : foldAt - yGap(foldAt));
   }
 
   public Point moveX(int n) {

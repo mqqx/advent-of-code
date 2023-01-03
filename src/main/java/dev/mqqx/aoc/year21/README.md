@@ -69,6 +69,13 @@ Part 2 adds the condition, that one of the small caves can be visited two times.
 Besides that the small cave visits are counted in an `AtomicLongMap` which will be used to check the added condition.
 
 ## Day 13
+
+For part 1 read all points into a set and fold them with the first folding, by subtracting the x/y-gap of the corresponding point value if its >= the x/y-line to fold.
+
+Collect everything back into a set to ensure distinctness.
+
+For part 2 apply all foldings and print the final list of points.
+
 ## Day 14
 ## Day 15
 ## Day 16
