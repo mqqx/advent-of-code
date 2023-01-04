@@ -77,6 +77,9 @@ Collect everything back into a set to ensure distinctness.
 For part 2 apply all foldings and print the final list of points.
 
 ## Day 14
+
+Populate the polymer by using a `StringBuilder` to save the partial strings after each population.
+
 ## Day 15
 ## Day 16
 ## Day 17
