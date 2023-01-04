@@ -80,6 +80,15 @@ For part 2 apply all foldings and print the final list of points.
 
 Populate the polymer by using a `StringBuilder` to save the partial strings after each population.
 
+For part 2 we cannot rely on string manipulation as with 40 steps the result would get way to large (with starting length 4 and doubling every round (-1) the result would be roughly 4*2^40 and therefore in the TB area).
+
+So instead of string manipulation we start with the initial 3 string pairs and populate the polymer by iterating over the pairs, splitting them up and add the pairs value to it.
+
+Following up, we need to add one to the count of the first and the last char, so they are double counted as any other char.
+
+Afterwards we subtract the highest count by the lowest count and divide the result by 2, because of the double counting.
+
+
 ## Day 15
 ## Day 16
 ## Day 17
