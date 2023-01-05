@@ -11,10 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import lombok.NonNull;
 
-// TODO add comparable
-// public class Point implements Comparable<Point> {
-public record Point(int x, int y) {
+public record Point(int x, int y) implements Comparable<Point> {
   public Point() {
     this(0, 0);
   }
@@ -216,5 +215,19 @@ public record Point(int x, int y) {
 
   public boolean hasSurroundingIn(List<Point> points) {
     return containsAny(points, surrounding().toList());
+  }
+
+  // orders points in left-to-right and top-to-bottom order
+  @Override
+  public int compareTo(@NonNull Point other) {
+    if (this.equals(other)) {
+      return 0;
+    } else if (other.y > this.y) {
+      return -1;
+    } else if (other.y < this.y) {
+      return 1;
+    } else {
+      return (other.x > this.x ? -1 : 1);
+    }
   }
 }

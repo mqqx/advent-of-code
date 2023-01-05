@@ -1,6 +1,7 @@
 package dev.mqqx.aoc.year21;
 
 import static dev.mqqx.aoc.util.SplitUtils.toGrid;
+import static java.lang.Character.getNumericValue;
 import static java.util.Comparator.reverseOrder;
 
 import com.google.common.util.concurrent.AtomicLongMap;
@@ -112,7 +113,7 @@ public class Day9 {
       String string = heights.get(y);
       char[] charArray = string.toCharArray();
       for (int x = 0; x < charArray.length; x++) {
-        heightMap[x][y] = new HeightBasin(charArray[x] - '0', null);
+        heightMap[x][y] = new HeightBasin(getNumericValue(charArray[x]), null);
       }
     }
     return heightMap;

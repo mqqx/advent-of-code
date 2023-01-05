@@ -88,8 +88,10 @@ Following up, we need to add one to the count of the first and the last char, so
 
 Afterwards we subtract the highest count by the lowest count and divide the result by 2, because of the double counting.
 
-
 ## Day 15
+
+Use Dijkstra to get the path with the lowest risk. For the 2nd part expand the grid first and solve it with the same implementation.
+
 ## Day 16
 ## Day 17
 ## Day 18
