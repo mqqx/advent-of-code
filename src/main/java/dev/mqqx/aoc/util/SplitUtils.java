@@ -1,7 +1,9 @@
 package dev.mqqx.aoc.util;
 
+import static java.lang.Character.getNumericValue;
 import static java.util.Arrays.stream;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
@@ -72,10 +74,33 @@ public class SplitUtils {
     for (int y = 0; y < grid.length; y++) {
       final String line = lines.get(y);
       for (int x = 0; x < grid[0].length; x++) {
-        grid[y][x] = line.charAt(x) - '0';
+        grid[y][x] = getNumericValue(line.charAt(x));
       }
     }
 
     return grid;
+  }
+
+  @SuppressWarnings("unchecked")
+  // can be suppressed as Node will be cast to generic type before adding to List
+  public static <T extends Comparable<T>> List<Node<T>> toGraph(
+      Resource stringResource, Class<T> type) {
+    final List<String> lines = linesList(stringResource);
+    final List<Node<T>> graph = new ArrayList<>();
+
+    for (int y = 0; y < lines.size(); y++) {
+      final String line = lines.get(y);
+      for (int x = 0; x < line.length(); x++) {
+        if (Integer.class.equals(type)) {
+          graph.add((Node<T>) new Node<>(new Point(x, y), getNumericValue(line.charAt(x))));
+        } else if (Character.class.equals(type)) {
+          graph.add((Node<T>) new Node<>(new Point(x, y), line.charAt(x)));
+        } else {
+          throw new UnsupportedOperationException("");
+        }
+      }
+    }
+
+    return graph;
   }
 }
