@@ -93,6 +93,11 @@ Afterwards we subtract the highest count by the lowest count and divide the resu
 Use Dijkstra to get the path with the lowest risk. For the 2nd part expand the grid first and solve it with the same implementation.
 
 ## Day 16
+
+Parse hex string to binary string by using simple string replacement for each hex number, without having to worry about data type boundaries.
+
+Parse packets as long as the end of the binary string is not reached and add the version of each to a counter which will then be returned as score in the 1st part.
+
 ## Day 17
 ## Day 18
 ## Day 19
