@@ -58,13 +58,32 @@ class Day16Test {
   void testSolvePart2Example() {
     final Resource example = new ClassPathResource("year21/day16/16-example");
 
-    assertThat(Day16.solvePart2(example)).isEqualTo(157);
+    assertThat(Day16.solvePart2(example)).isEqualTo(2_021);
+  }
+
+  private static Stream<Arguments> provideLongPacketsPart2() {
+    return Stream.of(
+        arguments("C200B40A82", 3L),
+        arguments("04005AC33890", 54L),
+        arguments("880086C3E88112", 7L),
+        arguments("CE00C43D881120", 9L),
+        arguments("D8005AC2A8F0", 1L),
+        arguments("F600BC2D8F", 0L),
+        arguments("9C005AC2F8F0", 0L),
+        arguments("9C0141080250320F1802104A08", 1L));
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideLongPacketsPart2")
+  void testSolvePart2Examples(String packet, Long expectedVersionSum) {
+    assertThat(Day16.solvePart2(new ByteArrayResource(packet.getBytes())))
+        .isEqualTo(expectedVersionSum);
   }
 
   @Test
   void testSolvePart2() {
     final Resource resource = new ClassPathResource("year21/day16/16");
 
-    assertThat(Day16.solvePart2(resource)).isEqualTo(157);
+    assertThat(Day16.solvePart2(resource)).isEqualTo(1_015_320_896_946L);
   }
 }

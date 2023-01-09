@@ -94,9 +94,12 @@ Use Dijkstra to get the path with the lowest risk. For the 2nd part expand the g
 
 ## Day 16
 
-Parse hex string to binary string by using simple string replacement for each hex number, without having to worry about data type boundaries.
+Parse hex string to binary string by iterating over the strings chars and collect the suiting bit-string, without having to worry about data type boundaries.
 
-Parse packets as long as the end of the binary string is not reached and add the version of each to a counter which will then be returned as score in the 1st part.
+Parse packets as long as the end of the binary string is not reached and sum the version of each as score in the 1st part.
+
+Parse the values and evaluate them by their corresponding operation as long as the end of the binary string is reached.
+Return the last operation result as score for part 2.
 
 ## Day 17
 ## Day 18
