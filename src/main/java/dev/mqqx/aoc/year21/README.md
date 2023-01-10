@@ -102,6 +102,9 @@ Parse the values and evaluate them by their corresponding operation as long as t
 Return the last operation result as score for part 2.
 
 ## Day 17
+
+Brute force around the edges of the borders and try every x/y for velocity in a reasonable amount of steps.
+
 ## Day 18
 ## Day 19
 ## Day 20
