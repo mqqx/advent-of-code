@@ -19,7 +19,6 @@ class Day17Test {
   void testSolvePart1() {
     final Resource resource = new ClassPathResource("year21/day17/17");
 
-    // 1176 is too low
     assertThat(Day17.solvePart1(resource)).isEqualTo(5_886);
   }
 
@@ -27,13 +26,13 @@ class Day17Test {
   void testSolvePart2Example() {
     final Resource example = new ClassPathResource("year21/day17/17-example");
 
-    assertThat(Day17.solvePart2(example)).isEqualTo(157);
+    assertThat(Day17.solvePart2(example)).isEqualTo(112);
   }
 
   @Test
   void testSolvePart2() {
     final Resource resource = new ClassPathResource("year21/day17/17");
 
-    assertThat(Day17.solvePart2(resource)).isEqualTo(157);
+    assertThat(Day17.solvePart2(resource)).isEqualTo(1_806);
   }
 }

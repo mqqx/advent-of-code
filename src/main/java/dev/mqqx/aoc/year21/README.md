@@ -105,6 +105,10 @@ Return the last operation result as score for part 2.
 
 Brute force around the edges of the borders and try every x/y for velocity in a reasonable amount of steps.
 
+Brute force part 2 with even larger ranges.
+
+Can be improved by filtering out shots which can never reach the target, e.g. when their x velocity is 0 before or after the target.
+
 ## Day 18
 ## Day 19
 ## Day 20
