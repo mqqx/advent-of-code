@@ -1,7 +1,10 @@
 package dev.mqqx.aoc.year21;
 
+import static dev.mqqx.aoc.util.NumberUtils.minNForSumToNBySum;
+import static dev.mqqx.aoc.util.NumberUtils.sumToN;
 import static dev.mqqx.aoc.util.SplitUtils.read;
 import static java.lang.Integer.parseInt;
+import static java.lang.Math.abs;
 
 import com.google.common.collect.Range;
 import lombok.AccessLevel;
@@ -13,12 +16,10 @@ public class Day17 {
 
   static int solvePart1(Resource input) {
     final TargetArea targetArea = TargetArea.parse(input);
-    // x19,y48
     int yMax = 0;
-
-    // FIXME implement proper ranges
-    for (int x = 0; x < 50; x++) {
-      for (int y = 0; y < 150; y++) {
+    int x = minNForSumToNBySum(targetArea.x().lowerEndpoint());
+    for (; x <= targetArea.x().upperEndpoint(); x++) {
+      for (int y = 0; y < abs(targetArea.y().lowerEndpoint()); y++) {
         final int calcYMax = calcYMax(x, y, targetArea);
         if (calcYMax > yMax) {
           yMax = calcYMax;
@@ -33,9 +34,12 @@ public class Day17 {
     final TargetArea targetArea = TargetArea.parse(input);
     int totalCount = 0;
 
-    for (int x = 0; x < 250; x++) {
-      for (int y = -109; y < 600; y++) {
-        totalCount += calcYMax2(x, y, targetArea);
+    int x = minNForSumToNBySum(targetArea.x().lowerEndpoint());
+    for (; x <= targetArea.x().upperEndpoint(); x++) {
+      for (int y = targetArea.y().lowerEndpoint(); y < abs(targetArea.y().lowerEndpoint()); y++) {
+        if (canReachTarget(x, y, targetArea)) {
+          totalCount++;
+        }
       }
     }
 
@@ -47,7 +51,6 @@ public class Day17 {
     int y = 0;
 
     int yMax = 0;
-    int steps = 0;
 
     do {
       x += xVelocity;
@@ -56,44 +59,39 @@ public class Day17 {
       if (y > yMax) {
         yMax = y;
       }
-      steps++;
-      // FIXME implement proper end condition
-      if (steps == 250) {
-        return -1;
+
+      if (targetArea.doesContain(x, y)) {
+        return yMax;
       }
 
       if (xVelocity != 0) {
         xVelocity--;
       }
       yVelocity--;
-    } while (targetArea.doesNotContain(x, y));
+    } while (targetArea.canBeReached(x, y, xVelocity));
 
-    return yMax;
+    return 0;
   }
 
-  private static int calcYMax2(int xVelocity, int yVelocity, TargetArea targetArea) {
+  private static boolean canReachTarget(int xVelocity, int yVelocity, TargetArea targetArea) {
     int x = 0;
     int y = 0;
-
-    int steps = 0;
 
     do {
       x += xVelocity;
       y += yVelocity;
 
-      steps++;
-      // FIXME implement proper end condition
-      if (steps == 2_500) {
-        return 0;
+      if (targetArea.doesContain(x, y)) {
+        return true;
       }
 
       if (xVelocity != 0) {
         xVelocity--;
       }
       yVelocity--;
-    } while (targetArea.doesNotContain(x, y));
+    } while (targetArea.canBeReached(x, y, xVelocity));
 
-    return 1;
+    return false;
   }
 
   private record TargetArea(Range<Integer> x, Range<Integer> y) {
@@ -101,8 +99,15 @@ public class Day17 {
       this(Range.closed(xMin, xMax), Range.closed(yMin, yMax));
     }
 
-    boolean doesNotContain(int x, int y) {
-      return !this.x.contains(x) || !this.y.contains(y);
+    boolean doesContain(int x, int y) {
+      return this.x.contains(x) && this.y.contains(y);
+    }
+
+    boolean canBeReached(int x, int y, int xVelocity) {
+      final boolean isInReach = x <= this.x.upperEndpoint() && y >= this.y.lowerEndpoint();
+      final boolean canBeReached = x + sumToN(xVelocity) >= this.x.lowerEndpoint();
+
+      return isInReach && canBeReached;
     }
 
     static TargetArea parse(Resource input) {
