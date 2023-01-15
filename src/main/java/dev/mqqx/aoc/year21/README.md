@@ -112,6 +112,15 @@ Can be improved by filtering out shots which can never reach the target, e.g. wh
 ## Day 18
 ## Day 19
 ## Day 20
+
+Looked very easy at first, but was a bit tricky due to flipping border pixels in the image enhancement algorithm of the actual input.
+
+The index of `0 0000 0000`, which translates to index `0` is `#` in the actual input. The index of `1 1111 1111`, which translates to index `511` is `.`.
+
+Therefor the border bits flip for the actual input on odd rounds.
+
+Besides that the parsing and enhancing of the image was pretty forward and could just use a round counter of `50` instead of `2` for part 2, without further changes.
+
 ## Day 21
 ## Day 22
 ## Day 23
