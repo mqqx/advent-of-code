@@ -1,6 +1,7 @@
 package dev.mqqx.aoc.year21;
 
 import static dev.mqqx.aoc.util.ArrayUtils.deepCopy;
+import static dev.mqqx.aoc.util.NumberUtils.isOdd;
 import static dev.mqqx.aoc.util.SplitUtils.read;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
@@ -34,14 +35,13 @@ public class Day20 {
             && imageEnhancementAlgorithm.charAt(imageEnhancementAlgorithm.length() - 1) == '0';
 
     Character[][] image = toGrid(splitInput[1]);
-    printImage(image);
+    print(image);
 
     for (int round = 0; round < numberOfEnhancementRounds; round++) {
-      final boolean isOdd = round % 2 == 1;
-      final boolean hasFlippingBits = isOdd && shouldFlipBorderPixel;
+      final boolean hasFlippingBits = isOdd(round) && shouldFlipBorderPixel;
       image = addLightPixelBorder(image, hasFlippingBits);
       enhance(image, imageEnhancementAlgorithm, hasFlippingBits);
-      printImage(image);
+      print(image);
     }
 
     return countPixels(image);
@@ -65,10 +65,12 @@ public class Day20 {
 
     for (int yMarker = -1; yMarker < 2; yMarker++) {
       for (int xMarker = -1; xMarker < 2; xMarker++) {
-        if (y + yMarker < 0
-            || y + yMarker == originalImage.length
-            || x + xMarker < 0
-            || x + xMarker == originalImage[0].length) {
+        final boolean isBorderPixel =
+            y + yMarker < 0
+                || y + yMarker == originalImage.length
+                || x + xMarker < 0
+                || x + xMarker == originalImage[0].length;
+        if (isBorderPixel) {
           convertBuilder.append(hasFlippingBits ? '1' : '0');
         } else {
           convertBuilder.append(originalImage[y + yMarker][x + xMarker]);
@@ -79,7 +81,7 @@ public class Day20 {
     return parseInt(convertBuilder.toString(), 2);
   }
 
-  private static void printImage(Character[][] image) {
+  private static void print(Character[][] image) {
     if (log.isTraceEnabled()) {
       final StringBuilder board = new StringBuilder();
       for (Character[] chars : image) {

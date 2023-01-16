@@ -18,11 +18,19 @@ public class NumberUtils {
 
   public static int median(int[] nums) {
     int median;
-    if (nums.length % 2 == 0) {
+    if (isEven(nums.length)) {
       median = (nums[nums.length / 2] + nums[nums.length / 2 - 1]) / 2;
     } else {
       median = nums[nums.length / 2];
     }
     return median;
+  }
+
+  public static boolean isOdd(int toCheck) {
+    return toCheck % 2 == 1;
+  }
+
+  public static boolean isEven(int toCheck) {
+    return !isOdd(toCheck);
   }
 }
