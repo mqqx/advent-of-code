@@ -26,11 +26,11 @@ public class NumberUtils {
     return median;
   }
 
-  public static boolean isOdd(int toCheck) {
+  public static boolean isOdd(long toCheck) {
     return toCheck % 2 == 1;
   }
 
-  public static boolean isEven(int toCheck) {
+  public static boolean isEven(long toCheck) {
     return !isOdd(toCheck);
   }
 }
