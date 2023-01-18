@@ -110,6 +110,11 @@ Brute force part 2 with even larger ranges.
 Can be improved by filtering out shots which can never reach the target, e.g. when their x velocity is 0 before or after the target.
 
 ## Day 18
+
+Use `JsonParser` to get an easy nested representation of the input before parsing it to nested `Node` with either value or left and right `Node` aka snailfish number.
+
+merge and reduce the parsed snailfish numbers until the whole list was processed and return the recursive calculated magnitude for part 1.
+
 ## Day 19
 ## Day 20
 
