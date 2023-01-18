@@ -43,23 +43,20 @@ public class Day13 {
                     })
             .toList();
 
-    final int index2 = 1 + orderedSignalLists.indexOf(List.of(List.of(2L)));
-    final int index6 = 1 + orderedSignalLists.indexOf(List.of(List.of(6L)));
+    final int index2 = 1 + orderedSignalLists.indexOf(List.of(List.of(2)));
+    final int index6 = 1 + orderedSignalLists.indexOf(List.of(List.of(6)));
     return index2 * index6;
   }
 
   private static int compare(Object left, Object right) {
-    final boolean isLeftList = left instanceof List<?>;
-    final boolean isRightList = right instanceof List<?>;
-
-    if (isLeftList && isRightList) {
-      return compareLists((List<?>) left, (List<?>) right);
-    } else if (isLeftList || isRightList) {
+    if (left instanceof List<?> l && right instanceof List<?> r) {
+      return compareLists(l, r);
+    } else if (left instanceof List<?> || right instanceof List<?>) {
       return compareLists(toList(left), toList(right));
-    } else {
-      if ((long) left > (long) right) {
+    } else if (left instanceof Integer l && right instanceof Integer r) {
+      if (l > r) {
         return -1;
-      } else if ((long) left < (long) right) {
+      } else if (l < r) {
         return 1;
       }
     }
@@ -88,9 +85,11 @@ public class Day13 {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  // can be suppressed as leftObject will always be a List<Object> when it is no Integer
   private static List<Object> toList(Object leftObject) {
-    if (leftObject instanceof Long) {
-      return List.of(leftObject);
+    if (leftObject instanceof Integer i) {
+      return List.of(i);
     }
     return (List<Object>) leftObject;
   }
