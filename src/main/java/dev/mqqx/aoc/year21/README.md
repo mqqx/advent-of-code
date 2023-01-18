@@ -115,6 +115,8 @@ Use `JsonParser` to get an easy nested representation of the input before parsin
 
 merge and reduce the parsed snailfish numbers until the whole list was processed and return the recursive calculated magnitude for part 1.
 
+For part 2 iterate over all snailfish numbers in a nested loop, merge and reduce each pair of `x+y` as well as `y+x` as the commutative is not the same.
+
 ## Day 19
 ## Day 20
 

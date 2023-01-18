@@ -6,7 +6,6 @@ import static java.lang.String.valueOf;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -19,18 +18,13 @@ import org.springframework.core.io.Resource;
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day18 {
-  static long solvePart1(Resource input) {
+  static int solvePart1(Resource input) {
     final JsonParser parser = JsonParserFactory.getJsonParser();
     final List<List<Object>> snailfishNumbers = lines(input).map(parser::parseList).toList();
 
     Node current = parseSnailfishNumber(snailfishNumbers.get(0), 0);
     for (int i = 1; i < snailfishNumbers.size(); i++) {
-      Node merged = new Node(0);
-      current.increaseDepth();
-      Node next = parseSnailfishNumber(snailfishNumbers.get(i), 1);
-      merged.left = current;
-      merged.right = next;
-      current = merged;
+      current = merge(current, parseSnailfishNumber(snailfishNumbers.get(i), 1));
       current.reduce();
     }
 
@@ -40,18 +34,42 @@ public class Day18 {
   }
 
   static int solvePart2(Resource input) {
-
     final JsonParser parser = JsonParserFactory.getJsonParser();
     final List<Node> snailfishNumbers =
         lines(input).map(parser::parseList).map(list -> parseSnailfishNumber(list, 0)).toList();
 
-    // add all snailfish numbers x +y and y +x and save highest mag
-
     int maxMagnitude = Integer.MIN_VALUE;
+    for (Node x : snailfishNumbers) {
+      for (Node y : snailfishNumbers) {
+        if (!x.equals(y)) {
+          final Node left = x.copy();
+          final Node right = y.copy();
+          Node merged = new Node(0);
+          left.increaseDepth();
+          right.increaseDepth();
+          merged.left = left;
+          merged.right = right;
+          merged.reduce();
 
-    final Stream<String> strings = lines(input);
+          final int magnitude = merged.calcMagnitude();
+          if (magnitude > maxMagnitude) {
+            maxMagnitude = magnitude;
+          }
+        }
+      }
+    }
 
-    return 157;
+    log.info("Largest magnitude: " + maxMagnitude);
+    return maxMagnitude;
+  }
+
+  private static Node merge(Node current, Node next) {
+    Node merged = new Node(0);
+    current.increaseDepth();
+    merged.left = current;
+    merged.right = next;
+    current = merged;
+    return current;
   }
 
   private static Node parseSnailfishNumber(Object input, int depth) {
@@ -77,6 +95,17 @@ public class Day18 {
 
     Node(int depth) {
       this.depth = depth;
+    }
+
+    Node copy() {
+      Node copy = new Node(depth);
+      if (value != null) {
+        copy.value = value;
+      } else {
+        copy.left = left.copy();
+        copy.right = right.copy();
+      }
+      return copy;
     }
 
     @Override
