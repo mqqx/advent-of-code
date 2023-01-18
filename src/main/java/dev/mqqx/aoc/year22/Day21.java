@@ -158,7 +158,7 @@ public class Day21 {
   }
 
   // list needs to be modifiable, as solved monkey equations will be removed
-  @java.lang.SuppressWarnings("squid:S6204")
+  @SuppressWarnings("squid:S6204")
   private static List<String> filter(String monkeyNumbers) {
     return monkeyNumbers
         .lines()

@@ -86,7 +86,7 @@ public class Day11 {
               final List<String> monkeyLines = monkeyString.lines().toList();
 
               // list needs to be modifiable, as items from other monkey will eventually be added
-              @java.lang.SuppressWarnings("squid:S6204")
+              @SuppressWarnings("squid:S6204")
               final List<Long> items =
                   Arrays.stream(monkeyLines.get(1).split(":")[1].trim().split(", "))
                       .map(Long::parseLong)

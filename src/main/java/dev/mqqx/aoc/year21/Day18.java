@@ -144,6 +144,8 @@ public class Day18 {
       }
     }
 
+    // nodeTwoPrevious != null is reachable sonar warning is a false positive
+    @SuppressWarnings("squid:S2583")
     boolean reduceDepth() {
       Node nodeTwoPrevious = null;
       Node previousNodeWithValue = null;

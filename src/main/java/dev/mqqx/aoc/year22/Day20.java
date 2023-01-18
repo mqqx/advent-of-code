@@ -35,7 +35,7 @@ public class Day20 {
 
       // as each remove is followed by an add the size of the list never changes outside each
       // iteration
-      @java.lang.SuppressWarnings("squid:S5413")
+      @SuppressWarnings("squid:S5413")
       final Number numberToMove = listToRotate.remove(currentNumberIndex);
       final int newIndex = calculateNewIndex(listToRotate.size(), currentNumberIndex, numberToMove);
 
@@ -48,7 +48,7 @@ public class Day20 {
   }
 
   // list needs to be modifiable, as moved numbers will be removed and added for automated shifting
-  @java.lang.SuppressWarnings("squid:S6204")
+  @SuppressWarnings("squid:S6204")
   private static List<Number> initializeList(Resource input, int decryptionKey) {
     final AtomicInteger index = new AtomicInteger();
 
