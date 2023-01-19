@@ -26,13 +26,13 @@ class Day19Test {
   void testSolvePart2Example() {
     final Resource example = new ClassPathResource("year21/day19/19-example");
 
-    assertThat(Day19.solvePart2(example)).isEqualTo(157);
+    assertThat(Day19.solvePart2(example)).isEqualTo(3_621);
   }
 
   @Test
   void testSolvePart2() {
     final Resource resource = new ClassPathResource("year21/day19/19");
 
-    assertThat(Day19.solvePart2(resource)).isEqualTo(157);
+    assertThat(Day19.solvePart2(resource)).isEqualTo(13_184);
   }
 }

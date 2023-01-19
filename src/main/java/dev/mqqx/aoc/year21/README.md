@@ -125,6 +125,8 @@ For other scanner results try all 24 different orientations in comparison to the
 
 Therefor lots of nested loops are used in part 1.
 
+Part 2 requires the highest manhattan distance between the scanners found in part 1.
+
 ## Day 20
 
 Looked very easy at first, but was a bit tricky due to flipping border pixels in the image enhancement algorithm of the actual input.

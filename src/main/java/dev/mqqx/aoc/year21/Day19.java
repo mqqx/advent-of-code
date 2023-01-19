@@ -2,6 +2,7 @@ package dev.mqqx.aoc.year21;
 
 import static dev.mqqx.aoc.util.Point3D.ORIGIN;
 import static dev.mqqx.aoc.util.SplitUtils.lines;
+import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -11,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +29,31 @@ public class Day19 {
     final List<Set<Point3D>> scannerResults = parseScannerResults(input);
 
     final Set<Point3D> beacons = scannerResults.remove(0);
+    final Set<Point3D> scanners = findBeaconsWithScanner(scannerResults, beacons);
+
+    log.debug("Found the following scanners: {}", scanners);
+    log.info("Matching beacons: {}", beacons.size());
+    return beacons.size();
+  }
+
+  static int solvePart2(Resource input) {
+    final List<Set<Point3D>> scannerResults = parseScannerResults(input);
+    final Set<Point3D> scanners = findBeaconsWithScanner(scannerResults, scannerResults.remove(0));
+
+    int maxManhattanDistance = Integer.MIN_VALUE;
+
+    for (Point3D x : scanners) {
+      for (Point3D y : scanners) {
+        maxManhattanDistance = max(maxManhattanDistance, x.manDist(y));
+      }
+    }
+
+    log.info("Largest manhattan distance between any two scanners: {}", maxManhattanDistance);
+    return maxManhattanDistance;
+  }
+
+  private static Set<Point3D> findBeaconsWithScanner(
+      List<Set<Point3D>> scannerResults, Set<Point3D> beacons) {
     final Set<Point3D> scanners = new HashSet<>();
 
     // first scanner starts at origin
@@ -45,16 +70,7 @@ public class Day19 {
         beacons.addAll(transformed);
       }
     }
-
-    log.debug("Found the following scanners: {}", scanners);
-    log.info("Matching beacons: {}", beacons.size());
-    return beacons.size();
-  }
-
-  static int solvePart2(Resource input) {
-    final Stream<String> strings = lines(input);
-
-    return 157;
+    return scanners;
   }
 
   // list needs to be modifiable, as scanner results will be removed and added
