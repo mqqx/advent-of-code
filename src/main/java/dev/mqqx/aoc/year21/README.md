@@ -118,6 +118,13 @@ merge and reduce the parsed snailfish numbers until the whole list was processed
 For part 2 iterate over all snailfish numbers in a nested loop, merge and reduce each pair of `x+y` as well as `y+x` as the commutative is not the same.
 
 ## Day 19
+
+Parse scanner results to own `Point3D` record and use first scanner result as base for comparison to others.
+
+For other scanner results try all 24 different orientations in comparison to the original scanner and add the beacons if at least 12 match.
+
+Therefor lots of nested loops are used in part 1.
+
 ## Day 20
 
 Looked very easy at first, but was a bit tricky due to flipping border pixels in the image enhancement algorithm of the actual input.
