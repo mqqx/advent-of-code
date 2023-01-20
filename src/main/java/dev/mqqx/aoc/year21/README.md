@@ -141,4 +141,11 @@ Besides that the parsing and enhancing of the image was pretty forward and could
 ## Day 22
 ## Day 23
 ## Day 24
+
+There are 9^14 possibilities to find the largest model number.
+That's more than can be checked in a reasonable time.
+
+Therefor after examining, comparing and reducing the instruction patters it turns out, there are only two relevant instructions per set of 18 instructions.
+Taking these the solution can be simplified to only check if the first operand of the current instruction added to the second operand of the last instruction is `>= 0`.
+
 ## Day 25
