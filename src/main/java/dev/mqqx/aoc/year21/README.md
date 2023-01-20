@@ -148,4 +148,6 @@ That's more than can be checked in a reasonable time.
 Therefor after examining, comparing and reducing the instruction patters it turns out, there are only two relevant instructions per set of 18 instructions.
 Taking these the solution can be simplified to only check if the first operand of the current instruction added to the second operand of the last instruction is `>= 0`.
 
+To get the smallest model number for part 2, just start from the smallest number `1` and count upwards.
+
 ## Day 25
