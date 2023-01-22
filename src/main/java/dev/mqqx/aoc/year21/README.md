@@ -140,6 +140,11 @@ Besides that the parsing and enhancing of the image was pretty forward and could
 ## Day 21
 ## Day 22
 ## Day 23
+
+Especially part 1 could be easily used by hand, while for part 2 it would take quite some time. Therefor using dijkstras to find the least energy required to organize the amphipods in part 1 and 2.
+
+Additionally, part 2 doubles the length of the burrows for each amphipod type, which we can then use to iterate over it from 1-4.
+
 ## Day 24
 
 There are 9^14 possibilities to find the largest model number.
