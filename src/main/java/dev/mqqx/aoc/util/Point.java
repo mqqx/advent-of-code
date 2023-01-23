@@ -1,5 +1,6 @@
 package dev.mqqx.aoc.util;
 
+import static java.lang.Integer.compare;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
@@ -217,17 +218,12 @@ public record Point(int x, int y) implements Comparable<Point> {
     return containsAny(points, surrounding().toList());
   }
 
-  // orders points in left-to-right and top-to-bottom order
   @Override
   public int compareTo(@NonNull Point other) {
-    if (this.equals(other)) {
-      return 0;
-    } else if (other.y > this.y) {
-      return -1;
-    } else if (other.y < this.y) {
-      return 1;
+    if (x != other.x()) {
+      return compare(x, other.x());
     } else {
-      return (other.x > this.x ? -1 : 1);
+      return compare(y, other.y());
     }
   }
 }
