@@ -1,7 +1,12 @@
 package dev.mqqx.aoc.util;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.Math.sqrt;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -32,5 +37,17 @@ public class NumberUtils {
 
   public static boolean isEven(long toCheck) {
     return !isOdd(toCheck);
+  }
+
+  public static List<Integer> parseIntegers(String search) {
+    final Pattern integers = Pattern.compile("-?\\d+");
+    final Matcher matcher = integers.matcher(search);
+
+    final List<Integer> integerList = new ArrayList<>();
+    while (matcher.find()) {
+      integerList.add(parseInt(matcher.group()));
+    }
+
+    return integerList;
   }
 }
