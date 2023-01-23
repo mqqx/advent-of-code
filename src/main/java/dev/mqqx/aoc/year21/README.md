@@ -139,6 +139,13 @@ Besides that the parsing and enhancing of the image was pretty forward and could
 
 ## Day 21
 ## Day 22
+
+At first, I thought about using `Range` and `RangeSet` provided by guava. But unfortunately writing a proper `DiscreteDomain` implementation for `Point3D` is not trivial, as with even setting up strict rules for `next` and `last` element methods, one cannot find an easy working direction.
+
+Therefore, I started to save the individual cubes one-by-one and compared them to previous ones regarding there overlapping parts.
+
+Solution runs pretty fast, so it can be used for part 1 and 2 as well, by just skipping the fixed lower and upper bounds of part 1 in part 2.
+
 ## Day 23
 
 Especially part 1 could be easily used by hand, while for part 2 it would take quite some time. Therefor using dijkstras to find the least energy required to organize the amphipods in part 1 and 2.
