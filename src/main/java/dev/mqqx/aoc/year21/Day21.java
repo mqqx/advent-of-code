@@ -9,45 +9,36 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.NONE)
 public class Day21 {
 
   static int solvePart1(Resource input) {
-    final List<Player> players =
-        lines(input)
-            .map(line -> line.charAt(line.length() - 1))
-            .map(Character::getNumericValue)
-            .map(Player::new)
-            .toList();
+    final List<Player> players = parsePlayers(input);
 
     int dice = 0;
     int rollCounter = 0;
     int stepsToMove;
-    boolean isGameRunning = true;
-    int loser = -1;
     do {
       for (int i = 0; i < players.size(); i++) {
-        stepsToMove = ++dice;
-        int dice1 = dice;
-        dice = dice == 100 ? 0 : dice;
-        stepsToMove += ++dice;
-        int dice2 = dice;
-        dice = dice == 100 ? 0 : dice;
-        stepsToMove += ++dice;
-        int dice3 = dice;
-        dice = dice == 100 ? 0 : dice;
-
         rollCounter += 3;
+        stepsToMove = ++dice;
+        final int dice1 = dice;
+        dice %= 100;
+        stepsToMove += ++dice;
+        final int dice2 = dice;
+        dice %= 100;
+        stepsToMove += ++dice;
+        final int dice3 = dice;
+        dice %= 100;
 
         final Player player = players.get(i);
+        player.move(stepsToMove);
 
-        final int newPos = (player.getPos() + stepsToMove) % 10;
-        player.setPos(newPos == 0 ? 10 : newPos);
-        player.setScore(player.getScore() + player.getPos());
-
-        System.out.println(
+        log.debug(
             "Player "
                 + (i + 1)
                 + " rolls "
@@ -61,28 +52,29 @@ public class Day21 {
                 + " for a total score of "
                 + player.getScore());
 
-        if (player.getScore() >= 1000) {
-          loser = i == 1 ? 0 : 1;
-          isGameRunning = false;
-          break;
+        if (player.getScore() >= 1_000) {
+          final int loserId = i == 1 ? 0 : 1;
+          final int loserScore = players.get(loserId).getScore();
+          final int score = rollCounter * loserScore;
+          log.info(loserScore + " * " + rollCounter + " = " + score);
+          return score;
         }
       }
-
-    } while (isGameRunning);
-
-    System.out.println(
-        players.get(loser).getScore()
-            + " * "
-            + rollCounter
-            + " = "
-            + rollCounter * players.get(loser).getScore());
-    return rollCounter * players.get(loser).getScore();
+    } while (true);
   }
 
   static int solvePart2(Resource input) {
     final Stream<String> strings = lines(input);
 
     return 157;
+  }
+
+  private static List<Player> parsePlayers(Resource input) {
+    return lines(input)
+        .map(line -> line.charAt(line.length() - 1))
+        .map(Character::getNumericValue)
+        .map(Player::new)
+        .toList();
   }
 
   @Data
@@ -94,6 +86,12 @@ public class Day21 {
 
     private Player(int startingPos) {
       this(startingPos, 0);
+    }
+
+    private void move(int stepsToMove) {
+      final int newPos = (pos + stepsToMove) % 10;
+      pos = newPos == 0 ? 10 : newPos;
+      score += pos;
     }
   }
 }
