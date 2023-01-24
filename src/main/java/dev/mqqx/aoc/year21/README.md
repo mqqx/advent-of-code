@@ -138,6 +138,9 @@ Therefor the border bits flip for the actual input on odd rounds.
 Besides that the parsing and enhancing of the image was pretty forward and could just use a round counter of `50` instead of `2` for part 2, without further changes.
 
 ## Day 21
+
+Use a `Player` helper class together with simple looping until one player reaches at least `1000` points. Use modulo `%10` for the position and set it to `10` if `%10` would be `0` 
+
 ## Day 22
 
 At first, I thought about using `Range` and `RangeSet` provided by guava. But unfortunately writing a proper `DiscreteDomain` implementation for `Point3D` is not trivial, as with even setting up strict rules for `next` and `last` element methods, one cannot find an easy working direction.
