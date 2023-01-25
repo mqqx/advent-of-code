@@ -168,3 +168,5 @@ Taking these the solution can be simplified to only check if the first operand o
 To get the smallest model number for part 2, just start from the smallest number `1` and count upwards.
 
 ## Day 25
+
+Plainly implemented the requirements by moving the `>` chars first and the `v` chars afterwards. Moving until no more moves are done in one round.

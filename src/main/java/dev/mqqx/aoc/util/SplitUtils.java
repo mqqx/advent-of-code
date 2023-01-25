@@ -81,6 +81,20 @@ public class SplitUtils {
     return grid;
   }
 
+  public static Character[][] toCharGrid(Resource stringResource) {
+    final List<String> lines = linesList(stringResource);
+    final Character[][] grid = new Character[lines.size()][lines.get(0).length()];
+
+    for (int y = 0; y < grid.length; y++) {
+      final String line = lines.get(y);
+      for (int x = 0; x < grid[0].length; x++) {
+        grid[y][x] = line.charAt(x);
+      }
+    }
+
+    return grid;
+  }
+
   @SuppressWarnings("unchecked")
   // can be suppressed as Node will be cast to generic type before adding to List
   public static <T extends Comparable<T>> List<Node<T>> toGraph(
